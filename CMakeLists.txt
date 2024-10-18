@@ -53,8 +53,9 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 
-
-
+install(TARGETS ${PROJECT_NAME}
+  DESTINATION lib/  # Specify your custom path here
+)
 
 
 
