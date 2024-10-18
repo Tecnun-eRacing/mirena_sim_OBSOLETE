@@ -52,9 +52,11 @@ ament_target_dependencies(${PROJECT_NAME}
     mirena_msg
 )
 
-
-
-
+install(TARGETS ${PROJECT_NAME}
+ARCHIVE DESTINATION lib
+LIBRARY DESTINATION lib
+RUNTIME DESTINATION bin
+)
 
 
 
