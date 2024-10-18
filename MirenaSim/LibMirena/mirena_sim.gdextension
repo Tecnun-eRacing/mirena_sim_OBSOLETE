@@ -1,0 +1,9 @@
+[configuration]
+
+entry_symbol = "mirenaros_init"
+compatibility_minimum = "4.3"
+reloadable = true
+
+[libraries]
+linux.editor.x86_64 = "libmirena_sim.so"
+
