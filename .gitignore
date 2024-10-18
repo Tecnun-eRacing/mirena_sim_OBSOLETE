@@ -1,0 +1,118 @@
+# ROS2 specific ignores
+install/
+log/
+build/
+
+# Ignore generated dirs
+ament_cmake_core/
+ament_cmake_export_dependencies/
+ament_cmake_export_include_directories/
+ament_cmake_export_libraries/
+ament_cmake_export_targets/
+ament_cmake_export_link_flags/
+ament_cmake_include_directories/
+ament_cmake_libraries/
+ament_cmake_python/
+ament_cmake_target_dependencies/
+ament_cmake_test/
+ament_cmake_version/
+rosidl_generator_c/
+rosidl_generator_cpp/
+rosidl_typesupport_c/
+rosidl_typesupport_cpp/
+rosidl_typesupport_introspection_c/
+rosidl_typesupport_introspection_cpp/
+rosidl_typesupport_fastrtps_c/
+rosidl_typesupport_fastrtps_cpp/
+
+# Ignore python compiled files
+*.pyc
+
+# Ignore bag files
+*.db3
+
+# Ignore parameter modifications
+*.yaml.tmp
+
+# Godot specific ignores
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot 4+ specific ignores
+.godot/
+
+# Godot-specific ignores
+.import/
+export.cfg
+export_presets.cfg
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Common ignores
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+*.swp
+*.swo
+*~
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Backup & log files
+*.log
+*.bak
+
+# Colcon related files
+COLCON_IGNORE
+AMENT_IGNORE
