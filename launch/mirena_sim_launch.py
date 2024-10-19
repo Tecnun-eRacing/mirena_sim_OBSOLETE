@@ -12,7 +12,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         ExecuteProcess(
-            cmd=['godot', '--path', godot_project_path],  # Command to run Godot with the project path
+            cmd=['godot', '-e','--path', godot_project_path],  # Command to run Godot with the project path
             output='screen'  # Display output in the terminal
         ),
     ])
