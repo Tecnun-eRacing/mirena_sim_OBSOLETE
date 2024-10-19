@@ -51,12 +51,22 @@ ament_target_dependencies(${PROJECT_NAME}
     sensor_msgs
     mirena_msg
 )
-
-install(TARGETS ${PROJECT_NAME}
-DESTINATION lib
+#Copy the godot project
+install(DIRECTORY 
+MirenaSim
+DESTINATION share/${PROJECT_NAME}/
 )
 
+# Install the SO as library
+install(TARGETS ${PROJECT_NAME}
+DESTINATION share/${PROJECT_NAME}/MirenaSim/LibMirena
+)
 
+#Install the launchfiles
+install(DIRECTORY 
+launch
+DESTINATION share/${PROJECT_NAME}/
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
