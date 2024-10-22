@@ -15,6 +15,5 @@ func _process(delta):
 	engine_force = $MirenaCar.gas*ENGINE_F/255
 	var cam = get_viewport().get_texture().get_image()
 	cam.convert(Image.FORMAT_RGB8)
-	$MirenaCam.pubFrame(cam)
 	$MirenaLidar.scan()
 	pass
