@@ -5,18 +5,11 @@ using namespace godot;
 
 void MirenaCar::_bind_methods() {
 	//GAS
-	ClassDB::bind_method(D_METHOD("get_gas"), &MirenaCar::get_gas);
-	ClassDB::bind_method(D_METHOD("set_gas", "_gas"), &MirenaCar::set_gas);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gas"), "set_gas", "get_gas");
+	BIND_PROPERTY(MirenaCar, gas, Variant::INT);
 	//BRAKE
-	ClassDB::bind_method(D_METHOD("get_brake"), &MirenaCar::get_brake);
-	ClassDB::bind_method(D_METHOD("set_brake", "_brake"), &MirenaCar::set_brake);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "brake"), "set_brake", "get_brake");
+	BIND_PROPERTY(MirenaCar, brake, Variant::INT);
 	//STEER_ANGLE
-	ClassDB::bind_method(D_METHOD("get_steer_angle"), &MirenaCar::get_steer_angle);
-	ClassDB::bind_method(D_METHOD("set_steer_angle", "_steer_angle"), &MirenaCar::set_steer_angle);
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steer_angle"), "set_steer_angle", "get_steer_angle");
-
+	BIND_PROPERTY(MirenaCar, steer_angle, Variant::FLOAT);
 }
 
 MirenaCar::MirenaCar() {
