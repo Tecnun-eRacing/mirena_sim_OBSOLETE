@@ -13,6 +13,8 @@
 using namespace godot;
 
 void MirenaLidar::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("set_publish_rate", "p_rate"), &MirenaLidar::set_publish_rate);
+    ClassDB::bind_method(D_METHOD("get_publish_rate"), &MirenaLidar::get_publish_rate);
     ClassDB::bind_method(D_METHOD("set_max_range", "range"), &MirenaLidar::set_max_range);
     ClassDB::bind_method(D_METHOD("get_max_range"), &MirenaLidar::get_max_range);
     ClassDB::bind_method(D_METHOD("set_horizontal_resolution", "resolution"), &MirenaLidar::set_horizontal_resolution);
@@ -27,6 +29,8 @@ void MirenaLidar::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_collision_mask"), &MirenaLidar::get_collision_mask);
     ClassDB::bind_method(D_METHOD("scan"), &MirenaLidar::scan);
 
+    //Add properties
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_range"), "set_max_range", "get_max_range");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_resolution"), "set_horizontal_resolution", "get_horizontal_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_resolution"), "set_vertical_resolution", "get_vertical_resolution");
@@ -35,7 +39,7 @@ void MirenaLidar::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask"), "set_collision_mask", "get_collision_mask");
 }
 
-MirenaLidar::MirenaLidar() : max_range(100.0), horizontal_resolution(360), vertical_resolution(16), 
+MirenaLidar::MirenaLidar() : publish_rate(0.0),last_publish_time(0.0),max_range(100.0), horizontal_resolution(360), vertical_resolution(16), 
              vertical_fov(30.0), horizontal_fov(360.0), collision_mask(1) {
     if (!rclcpp::ok()) {
         rclcpp::init(0, nullptr);
@@ -47,6 +51,9 @@ MirenaLidar::MirenaLidar() : max_range(100.0), horizontal_resolution(360), verti
 MirenaLidar::~MirenaLidar() {
     // ROS 2 shutdown is typically handled at the application level
 }
+
+void MirenaLidar::set_publish_rate(double p_rate) { publish_rate = p_rate; }
+double MirenaLidar::get_publish_rate() const { return publish_rate; }
 
 void MirenaLidar::set_max_range(double p_range) { max_range = p_range; }
 double MirenaLidar::get_max_range() const { return max_range; }
@@ -141,5 +148,17 @@ void MirenaLidar::scan() {
     }
 
     pub->publish(std::move(cloud));
-    //UtilityFunctions::print("3D LIDAR scan published:");
+    UtilityFunctions::print("3D LIDAR scan published:");
+}
+
+
+void MirenaLidar::_process(double delta) {
+    last_publish_time += delta;
+    if (last_publish_time >= 1.0 / publish_rate) {
+	scan();
+    // Process ROS2 callbacks
+    rclcpp::spin_some(node);
+    last_publish_time = 0.0;
+    }
+
 }
