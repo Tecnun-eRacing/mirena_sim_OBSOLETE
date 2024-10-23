@@ -105,6 +105,7 @@ void MirenaLidar::scan() {
     cloud->is_dense = true;
 
     Transform3D global_transform = get_global_transform();
+    Transform3D relative_transform = global_transform.inverse(); //Get the inverse transform to bring all the points relative to lidar
     Vector3 origin = global_transform.get_origin();
 
     double h_angle_step = horizontal_fov / horizontal_resolution;
@@ -135,7 +136,7 @@ void MirenaLidar::scan() {
 
             Vector3 hit_point;
             if (result.size() > 0) {
-                hit_point = result["position"];
+                hit_point = relative_transform.xform((Vector3)result["position"]); //Get the point with relative coordinate to lidar source
             } else {
                 hit_point = to;
             }
