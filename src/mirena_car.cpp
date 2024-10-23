@@ -10,6 +10,11 @@ void MirenaCar::_bind_methods() {
 	BIND_PROPERTY(MirenaCar, brake, Variant::INT);
 	//STEER_ANGLE
 	BIND_PROPERTY(MirenaCar, steer_angle, Variant::FLOAT);
+	//X_POS
+	//BIND_PROPERTY(MirenaCar, x_pos, Variant::INT)
+	//Y_POS
+	//ANGLE
+
 }
 
 MirenaCar::MirenaCar() {
@@ -66,10 +71,10 @@ void MirenaCar::_process(double delta) {
 	uint8_t MirenaCar::get_brake(){
 		return brake;
 	}
-	void MirenaCar::set_steer_angle(float _steer_angle){
+	void MirenaCar::set_steer_angle(double _steer_angle){
 		steer_angle = _steer_angle;
 	}
-	float MirenaCar::get_steer_angle(){
+	double MirenaCar::get_steer_angle(){
 		return steer_angle;
 	}
 	
