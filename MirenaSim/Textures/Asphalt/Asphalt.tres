@@ -12,7 +12,6 @@ roughness_texture = ExtResource("4_8ixw5")
 normal_enabled = true
 normal_scale = 4.0
 normal_texture = ExtResource("3_g0gcb")
-heightmap_enabled = true
 heightmap_texture = ExtResource("2_qnj2v")
 uv1_scale = Vector3(0.1, 0.1, 0.1)
 uv1_triplanar = true

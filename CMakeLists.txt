@@ -35,10 +35,18 @@ set(SOURCES
 )
 
 # Create the shared library for the GDExtension
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(mirena_ros SHARED ${SOURCES})
+
+# Ensure ROS 2 libraries are found
+ament_target_dependencies(mirena_ros
+    rclcpp
+    std_msgs
+    sensor_msgs
+    mirena_msg
+)
 
 # Link Godot GDExtension, Godot CPP bindings, ROS 2 libraries
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(mirena_ros
     ${rclcpp_LIBRARIES}
     ${std_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
@@ -46,23 +54,36 @@ target_link_libraries(${PROJECT_NAME}
     OpenMP::OpenMP_CXX
 )
 
-# Ensure ROS 2 libraries are found
-ament_target_dependencies(${PROJECT_NAME}
-    rclcpp
-    std_msgs
-    sensor_msgs
-    mirena_msg
+
+# Copy generated library and export the godot project
+add_custom_command(
+    TARGET mirena_ros POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mirena_ros> ${CMAKE_SOURCE_DIR}/MirenaSim/LibMirena/libmirena_sim.so
+    COMMENT "Copying the built shared library to godot LibMirena extension folder"
 )
 
-#Copy the godot project
+# Set the godot export preset
+set(EXPORT_PRESET "Linux")
+
+# Custom target to export the Godot project
+add_custom_target(${PROJECT_NAME} ALL
+    COMMAND  mkdir -p "${CMAKE_BINARY_DIR}/MirenaSim" && godot --export-debug "${EXPORT_PRESET}" "${CMAKE_BINARY_DIR}/MirenaSim/MirenaSim"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/MirenaSim
+    COMMENT "Exporting Godot project with built shared library to ${CMAKE_BINARY_DIR}"
+)
+
+add_dependencies(${PROJECT_NAME} mirena_ros)
+
+#Install simulator for usage
+
+#Install the simulator for usage
 install(DIRECTORY 
-MirenaSim
+${CMAKE_BINARY_DIR}/MirenaSim
 DESTINATION share/${PROJECT_NAME}/
-)
-
-# Install the SO as library
-install(TARGETS ${PROJECT_NAME}
-DESTINATION share/${PROJECT_NAME}/MirenaSim/LibMirena
+FILE_PERMISSIONS 
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
 )
 
 #Install the launchfiles

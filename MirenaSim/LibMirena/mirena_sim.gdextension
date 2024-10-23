@@ -2,8 +2,9 @@
 
 entry_symbol = "mirenaros_init"
 compatibility_minimum = "4.3"
-reloadable = true
+reloadable = false
 
 [libraries]
 linux.editor.x86_64 = "libmirena_sim.so"
-
+linux.debug.x86_64 = "libmirena_sim.so"
+linux.release.x86_64 = "libmirena_sim.so"
