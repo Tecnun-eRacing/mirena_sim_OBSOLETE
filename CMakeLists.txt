@@ -13,7 +13,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(mirena_msg REQUIRED) # For car controls message
+
 find_package(OpenMP REQUIRED)
 
 # Include godot-cpp module
@@ -24,6 +26,7 @@ add_subdirectory(godot-cpp)
 include_directories(${rclcpp_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})
 include_directories(${sensor_msgs_INCLUDE_DIRS})
+include_directories(${geometry_msgs_INCLUDE_DIRS})
 
 # Source files for the project (your GDExtension and ROS 2 code)
 include_directories(src)
@@ -31,6 +34,7 @@ set(SOURCES
     src/mirena_car.cpp
     src/mirena_cam.cpp
     src/mirena_lidar.cpp
+    src/mirena_imu.cpp
     src/register_types.cpp
 )
 
@@ -42,6 +46,7 @@ ament_target_dependencies(mirena_ros
     rclcpp
     std_msgs
     sensor_msgs
+    geometry_msgs
     mirena_msg
 )
 
@@ -50,6 +55,7 @@ target_link_libraries(mirena_ros
     ${rclcpp_LIBRARIES}
     ${std_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
+    ${geometry_msgs_LIBRARIES}
     godot::cpp
     OpenMP::OpenMP_CXX
 )

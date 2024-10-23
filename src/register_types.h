@@ -6,6 +6,7 @@
 #include "mirena_car.hpp"
 #include "mirena_cam.hpp"
 #include "mirena_lidar.hpp"
+#include "mirena_imu.hpp"
 
 using namespace godot;
 

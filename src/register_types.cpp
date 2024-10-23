@@ -1,5 +1,4 @@
 #include "register_types.h"
-
 #include <gdextension_interface.h>
 #include <godot_cpp/core/defs.hpp>
 #include <godot_cpp/godot.hpp>
@@ -16,6 +15,8 @@ void mirenasim_init(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(MirenaCar);
 	GDREGISTER_CLASS(MirenaCam);
 	GDREGISTER_CLASS(MirenaLidar);
+	GDREGISTER_CLASS(MirenaImu);
+
 }
 
 void mirenasim_deinit(ModuleInitializationLevel p_level) {
