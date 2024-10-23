@@ -14,6 +14,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(mirena_msg REQUIRED) # For car controls message
+find_package(OpenMP REQUIRED)
 
 # Include godot-cpp module
 add_subdirectory(godot-cpp)
@@ -42,6 +43,7 @@ target_link_libraries(${PROJECT_NAME}
     ${std_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
     godot::cpp
+    OpenMP::OpenMP_CXX
 )
 
 # Ensure ROS 2 libraries are found

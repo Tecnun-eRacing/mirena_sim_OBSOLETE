@@ -103,6 +103,8 @@ void MirenaLidar::scan() {
     double h_angle_step = horizontal_fov / horizontal_resolution;
     double v_angle_step = vertical_fov / vertical_resolution;
 
+    //We paralelize the casts
+    #pragma omp parallel for
     for (int v = 0; v < vertical_resolution; ++v) {
         for (int h = 0; h < horizontal_resolution; ++h) {
             float azimuth = (h_angle_step * h - horizontal_fov / 2.0) * Math_PI / 180.0;
@@ -139,5 +141,5 @@ void MirenaLidar::scan() {
     }
 
     pub->publish(std::move(cloud));
-    UtilityFunctions::print("3D LIDAR scan published");
+    //UtilityFunctions::print("3D LIDAR scan published:");
 }
