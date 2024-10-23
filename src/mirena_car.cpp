@@ -5,11 +5,11 @@ using namespace godot;
 
 void MirenaCar::_bind_methods() {
 	//GAS
-	BIND_PROPERTY(MirenaCar, gas, Variant::INT);
+	BIND_PROPERTY_RW(MirenaCar, gas, Variant::INT);
 	//BRAKE
-	BIND_PROPERTY(MirenaCar, brake, Variant::INT);
+	BIND_PROPERTY_RW(MirenaCar, brake, Variant::INT);
 	//STEER_ANGLE
-	BIND_PROPERTY(MirenaCar, steer_angle, Variant::FLOAT);
+	BIND_PROPERTY_RW(MirenaCar, steer_angle, Variant::FLOAT);
 	//X_POS
 	//BIND_PROPERTY(MirenaCar, x_pos, Variant::INT)
 	//Y_POS
