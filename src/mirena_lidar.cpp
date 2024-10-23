@@ -149,7 +149,7 @@ void MirenaLidar::scan() {
     }
 
     pub->publish(std::move(cloud));
-    UtilityFunctions::print("3D LIDAR scan published:");
+    //UtilityFunctions::print("3D LIDAR scan published:");
 }
 
 
