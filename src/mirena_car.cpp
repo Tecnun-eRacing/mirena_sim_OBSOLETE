@@ -48,7 +48,6 @@ MirenaCar::MirenaCar() {
 
 MirenaCar::~MirenaCar() {
 	rosNode.reset();//Destroy Node
-    rclcpp::shutdown(); //Deinit ros connection
 	godot::UtilityFunctions::print("Class Destroyed");
 
 }
