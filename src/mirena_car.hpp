@@ -29,7 +29,7 @@ private:
 	//Internal Car Inputs
 	uint8_t gas;
 	uint8_t brake;
-	float steer_angle;
+	double steer_angle;
 
 protected:
 	static void _bind_methods();
@@ -43,8 +43,9 @@ public:
 	uint8_t get_gas();
 	void set_brake(uint8_t _brake);
 	uint8_t get_brake();
-	void set_steer_angle(float _steer_angle);
-	float get_steer_angle();
+	void set_steer_angle(double _steer_angle);
+	double get_steer_angle();
+	void set_x_position();
 	//Godot
 	void _process(double delta) override;
 
