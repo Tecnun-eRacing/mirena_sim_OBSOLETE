@@ -40,7 +40,7 @@ MirenaCar::MirenaCar() {
 
 
     rosSub = rosNode->create_subscription<mirena_msg::msg::CarControls>(
-    "carControl", 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
+    "car_control", 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
 
 	godot::UtilityFunctions::print("Subscribed");
 
