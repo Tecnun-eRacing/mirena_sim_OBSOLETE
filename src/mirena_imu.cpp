@@ -20,7 +20,7 @@ MirenaImu::MirenaImu() : publish_rate(0.0), last_publish_time(0.0)
     node = rclcpp::Node::make_shared("MirenaImu");
     godot::UtilityFunctions::print("MirenaImu Created");
     //Create Publishers
-    posePub = node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pose", 10);
+    posePub = node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pos", 10);
     speedPub = node->create_publisher<geometry_msgs::msg::TwistStamped>("car_speed", 10);
     accelPub = node->create_publisher<geometry_msgs::msg::AccelStamped>("car_accel", 10);
 }
