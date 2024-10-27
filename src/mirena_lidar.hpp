@@ -39,7 +39,7 @@ namespace godot
         MirenaLidar();
         ~MirenaLidar();
 
-		void _process(double delta) override;
+		void _physics_process(double delta) override;
 
 
 
