@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://bgdafh7stxdw8"]
+[gd_scene load_steps=11 format=3 uid="uid://bgdafh7stxdw8"]
 
 [ext_resource type="Material" uid="uid://bsv8ux5upf4hf" path="res://Textures/Asphalt/Asphalt.tres" id="1_ahvmt"]
 [ext_resource type="Script" path="res://Scripts/track.gd" id="2_bp587"]
@@ -6,37 +6,29 @@
 [ext_resource type="PackedScene" uid="uid://lnlv7w6dktqx" path="res://Scenes/vehicle/racecar.tscn" id="4_g1k8q"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ok5qf"]
-friction = 0.8
-rough = true
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_gnuhh"]
 points = PackedVector3Array(-50, 0, -50, -50, 0, 50, 50, 0, -50, 50, 0, 50)
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_uv2q3"]
+lightmap_size_hint = Vector2i(502, 502)
 material = ExtResource("1_ahvmt")
 size = Vector2(100, 100)
 
-[sub_resource type="CanvasTexture" id="CanvasTexture_u27ta"]
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pi2tb"]
+sky_top_color = Color(0.395069, 0.561835, 0.727236, 1)
+ground_bottom_color = Color(0.396078, 0.560784, 0.72549, 1)
+ground_horizon_color = Color(0.396078, 0.560784, 0.72549, 1)
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_0tyrf"]
-sky_top_color = Color(0.346815, 0.68597, 0.972459, 1)
-sky_horizon_color = Color(0.549852, 0.66672, 0.806033, 1)
-sky_curve = 0.227357
-sky_energy_multiplier = 6.8
-sky_cover = SubResource("CanvasTexture_u27ta")
-sun_angle_max = 360.0
-sun_curve = 0.409813
+[sub_resource type="Sky" id="Sky_640h4"]
+sky_material = SubResource("ProceduralSkyMaterial_pi2tb")
+process_mode = 1
 
-[sub_resource type="Sky" id="Sky_fk6x1"]
-sky_material = SubResource("ProceduralSkyMaterial_0tyrf")
-
-[sub_resource type="Environment" id="Environment_jie3h"]
-sky = SubResource("Sky_fk6x1")
-ambient_light_source = 3
-ambient_light_color = Color(1, 1, 1, 1)
-ambient_light_sky_contribution = 0.5
-ambient_light_energy = 0.0
-reflected_light_source = 1
+[sub_resource type="Environment" id="Environment_dtsg1"]
+background_mode = 1
+background_color = Color(0.529412, 0.807843, 0.921569, 1)
+sky = SubResource("Sky_640h4")
+ambient_light_color = Color(1, 0.992157, 0.878431, 1)
 
 [node name="SimEnviroment" type="Node"]
 
@@ -44,6 +36,8 @@ reflected_light_source = 1
 physics_material_override = SubResource("PhysicsMaterial_ok5qf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+top_level = true
 shape = SubResource("ConvexPolygonShape3D_gnuhh")
 
 [node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
@@ -56,8 +50,15 @@ script = ExtResource("2_bp587")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19.0969, 0)
 script = ExtResource("3_dglw2")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_jie3h")
-
 [node name="vehicle" parent="." instance=ExtResource("4_g1k8q")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0.57025, 0.426486, 0.0318995)
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -0.0228978, 0.186691, 0.0318995)
+mass = 200.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_dtsg1")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.3559, 0)
+light_energy = 4.0
+omni_range = 100.0
+omni_attenuation = 0.0

@@ -22,3 +22,8 @@ enabled=PackedStringArray("res://addons/freecam_3D/plugin.cfg")
 [filesystem]
 
 import/blender/enabled=false
+
+[physics]
+
+3d/run_on_separate_thread=true
+common/physics_interpolation=true
