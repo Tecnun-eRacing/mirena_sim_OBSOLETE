@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(mirena_sim)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options()
+  add_compile_options("-O3")
 endif()
 
 # find dependencies
@@ -73,7 +73,7 @@ set(EXPORT_PRESET "Linux")
 
 # Custom target to export the Godot project
 add_custom_target(${PROJECT_NAME} ALL
-    COMMAND  mkdir -p "${CMAKE_BINARY_DIR}/MirenaSim" && godot --export-debug "${EXPORT_PRESET}" "${CMAKE_BINARY_DIR}/MirenaSim/MirenaSim"
+    COMMAND  mkdir -p "${CMAKE_BINARY_DIR}/MirenaSim" && godot --export-release "${EXPORT_PRESET}" "${CMAKE_BINARY_DIR}/MirenaSim/MirenaSim"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/MirenaSim
     COMMENT "Exporting Godot project with built shared library to ${CMAKE_BINARY_DIR}"
 )
