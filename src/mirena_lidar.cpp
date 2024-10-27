@@ -153,7 +153,7 @@ void MirenaLidar::scan() {
 }
 
 
-void MirenaLidar::_process(double delta) {
+void MirenaLidar::_physics_process(double delta) {
     last_publish_time += delta;
     if (last_publish_time >= 1.0 / publish_rate) {
 	scan();
