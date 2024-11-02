@@ -7,7 +7,7 @@ import shutil
 
 def generate_launch_description():
     # Get the path to the ROS 2 package
-    package_path = get_package_share_directory('mirena_sim')  # Replace with your package name
+    package_path = get_package_share_directory('mirena_sim')  # Get theshare install folder
     godot_project_path = os.path.join(package_path, 'MirenaSim/MirenaSim')  # Relative path to sim executable
     return LaunchDescription([
         ExecuteProcess(

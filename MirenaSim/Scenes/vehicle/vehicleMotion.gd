@@ -13,5 +13,6 @@ func _process(delta):
 	engine_force = $MirenaCar.gas*ENGINE_F/255
 	brake = $MirenaCar.brake * BRAKE_F/255
 	$MirenaLidar.publish_rate = 5.0
-	$MirenaCam.publish_rate = 30.0
+	$MirenaCamL.publish_rate = 30.0
+	$MirenaCamR.publish_rate = 30.0
 	$MirenaImu.publish_rate = 30.0

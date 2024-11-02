@@ -12,6 +12,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 
+
+
 namespace godot
 {
 
@@ -24,6 +26,8 @@ namespace godot
 		float publish_rate;
 		double last_publish_time;
 
+		//Internal Variables
+		std::string topic_name;
 		SubViewport *viewport;
 		Camera3D *camera;
 		Vector2i resolution;
@@ -58,6 +62,8 @@ namespace godot
 		// Configuration methods
 		void set_publish_rate(float rate);
 		float get_publish_rate() const;
+		void set_topic_name(String name);
+		String get_topic_name() const;
 		void set_resolution(Vector2i res);
 		Vector2i get_resolution() const;
 		void set_use_environment(bool enable);
@@ -68,6 +74,8 @@ namespace godot
 		Vector3 get_camera_position() const;
 		void set_camera_rotation(Vector3 rotation);
 		Vector3 get_camera_rotation() const;
+
+
 		// Camera settings methods
 		void set_fov(float p_fov);
 		float get_fov() const;

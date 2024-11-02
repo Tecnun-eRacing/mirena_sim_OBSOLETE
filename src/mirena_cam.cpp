@@ -10,6 +10,8 @@ void MirenaCam::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_publish_rate", "rate"), &MirenaCam::set_publish_rate);
     ClassDB::bind_method(D_METHOD("get_publish_rate"), &MirenaCam::get_publish_rate);
+    ClassDB::bind_method(D_METHOD("set_topic_name", "name"), &MirenaCam::set_topic_name);
+    ClassDB::bind_method(D_METHOD("get_topic_name"), &MirenaCam::get_topic_name);
     ClassDB::bind_method(D_METHOD("set_resolution", "resolution"), &MirenaCam::set_resolution);
     ClassDB::bind_method(D_METHOD("get_resolution"), &MirenaCam::get_resolution);
     ClassDB::bind_method(D_METHOD("set_use_environment", "enable"), &MirenaCam::set_use_environment);
@@ -48,10 +50,12 @@ void MirenaCam::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doppler_tracking"), "set_doppler_tracking", "get_doppler_tracking");
     // NODE
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "topic_name"), "set_topic_name", "get_topic_name");
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "resolution"), "set_resolution", "get_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_environment"), "set_use_environment", "get_use_environment");
 }
 MirenaCam::MirenaCam() : publish_rate(0),
+                         topic_name("cam0"),
                          last_publish_time(0.0),
                          resolution(Vector2i(640, 480)),
                          use_environment(true),
@@ -72,7 +76,7 @@ MirenaCam::MirenaCam() : publish_rate(0),
         rclcpp::init(0, nullptr);
     }
     node = rclcpp::Node::make_shared("godot_camera_node");
-    image_publisher = node->create_publisher<sensor_msgs::msg::Image>("camera_frames", 10);
+    image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name, 10);
 }
 
 MirenaCam::~MirenaCam()
@@ -135,7 +139,8 @@ void MirenaCam::_ready()
 void MirenaCam::_process(double delta)
 {
     last_publish_time += delta;
-    if(camera)camera->set_global_transform(get_global_transform()); // Set camera position to node position
+    if (camera)
+        camera->set_global_transform(get_global_transform()); // Set camera position to node position
     if (last_publish_time >= 1.0 / publish_rate && viewport)
     {
         Ref<Image> img = viewport->get_texture()->get_image();
@@ -180,6 +185,7 @@ void MirenaCam::_update_camera_settings()
     camera->set_doppler_tracking(doppler_tracking ? Camera3D::DOPPLER_TRACKING_IDLE_STEP : Camera3D::DOPPLER_TRACKING_DISABLED);
 }
 
+//-------------------------------------------------------------[Getters and setters]----------------------------------------------------------------------//
 void MirenaCam::set_publish_rate(float rate)
 {
     publish_rate = rate;
@@ -188,6 +194,20 @@ void MirenaCam::set_publish_rate(float rate)
 float MirenaCam::get_publish_rate() const
 {
     return publish_rate;
+}
+
+void MirenaCam::set_topic_name(String name)
+{
+    if (!name.is_empty())
+    { // Check no
+        topic_name = name.utf8().get_data();
+        image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name, 10); // Change the publisher
+    }
+}
+
+String MirenaCam::get_topic_name() const
+{
+    return String(topic_name.c_str());
 }
 
 void MirenaCam::set_resolution(Vector2i res)
