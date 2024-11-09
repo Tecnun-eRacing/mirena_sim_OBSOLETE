@@ -46,6 +46,13 @@ mesh = SubResource("PlaneMesh_uv2q3")
 [node name="Track" type="Node3D" parent="."]
 script = ExtResource("2_bp587")
 
+[node name="FileDialog" type="FileDialog" parent="Track"]
+title = "Load Track"
+size = Vector2i(720, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+
 [node name="Freecam3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19.0969, 0)
 script = ExtResource("3_dglw2")
@@ -62,3 +69,5 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.3559, 0)
 light_energy = 4.0
 omni_range = 100.0
 omni_attenuation = 0.0
+
+[connection signal="file_selected" from="Track/FileDialog" to="Track" method="_on_file_selected"]
