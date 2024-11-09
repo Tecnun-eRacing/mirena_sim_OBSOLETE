@@ -11,6 +11,7 @@
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/camera_info.hpp"
 
 
 
@@ -22,7 +23,9 @@ namespace godot
 		GDCLASS(MirenaCam, Node3D)
 	private:
 		rclcpp::Node::SharedPtr node;
-		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher;
+		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher; //Image topic
+		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; //Camera Info topic
+
 		float publish_rate;
 		double last_publish_time;
 
@@ -34,7 +37,8 @@ namespace godot
 		bool use_environment;
 		// Create ROS2 message
 		std::unique_ptr<sensor_msgs::msg::Image> frame; 
-		
+		std::unique_ptr<sensor_msgs::msg::CameraInfo> info; 
+
 		// Camera settings
 		float fov;
 		float near_clip;
