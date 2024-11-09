@@ -75,8 +75,10 @@ MirenaCam::MirenaCam() : publish_rate(0),
     {
         rclcpp::init(0, nullptr);
     }
-    node = rclcpp::Node::make_shared("godot_camera_node");
-    image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name, 10);
+    node = rclcpp::Node::make_shared("MirenaCam");
+    image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name + "/image", 10);
+    info_publisher = node->create_publisher<sensor_msgs::msg::CameraInfo>(topic_name + "/camera_info", 10);
+
 }
 
 MirenaCam::~MirenaCam()
@@ -140,9 +142,11 @@ void MirenaCam::_process(double delta)
 {
     last_publish_time += delta;
     if (camera)
-        camera->set_global_transform(get_global_transform()); // Set camera position to node position
-    if (last_publish_time >= 1.0 / publish_rate && viewport)
+        camera->set_global_transform(get_global_transform()); // Set camera position to node position if camera exists
+
+    if (last_publish_time >= 1.0 / publish_rate && viewport) //Enforce rate
     {
+        //Publish the viewport rendered image
         Ref<Image> img = viewport->get_texture()->get_image();
         if (img.is_null())
             return;
@@ -164,6 +168,35 @@ void MirenaCam::_process(double delta)
         // Publish
         image_publisher->publish(std::move(frame));
         last_publish_time = 0.0;
+        
+        //Publish Camera Info
+        info = std::make_unique<sensor_msgs::msg::CameraInfo>();
+        // Calculate focal length based on FOV
+        double focal_length_pixels = (resolution.y / 2.0) / tan(fov * M_PI / 360.0);  // divide by 2 for half-angle
+        //Fill message
+        info->header.stamp = node->now();
+        info->header.frame_id = (topic_name + "_frame").c_str();
+        info->height = resolution.y;
+        info->width = resolution.x;
+        info->distortion_model = "plumb_bob";
+        info->d = std::vector<double>(5, 0.0);  // No distortion
+        info->k = { //Camera matrix
+            focal_length_pixels, 0.0, resolution.x  / 2.0,
+            0.0, focal_length_pixels, resolution.y  / 2.0,
+            0.0, 0.0, 1.0
+        };
+        info->r = { //Rectification matrix   
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0
+        };
+
+        info->p = { //Projection matrix
+            focal_length_pixels, 0.0, resolution.x / 2.0, 0.0,
+            0.0, focal_length_pixels, resolution.y / 2.0, 0.0,
+            0.0, 0.0, 1.0, 0.0
+        };
+    info_publisher->publish(std::move(info));
     }
 
     // Process ROS2 callbacks
@@ -201,7 +234,8 @@ void MirenaCam::set_topic_name(String name)
     if (!name.is_empty())
     { // Check no
         topic_name = name.utf8().get_data();
-        image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name, 10); // Change the publisher
+        image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name + "/image", 10); // Change the publisher
+        info_publisher = node->create_publisher<sensor_msgs::msg::CameraInfo>(topic_name + "/camera_info", 10);
     }
 }
 
