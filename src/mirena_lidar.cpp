@@ -99,7 +99,7 @@ void MirenaLidar::scan() {
     cloud->fields[2].datatype = sensor_msgs::msg::PointField::FLOAT32;
     cloud->fields[2].count = 1;
 
-    cloud->point_step = 12;
+    cloud->point_step = 12; // Memory offset 3*4bytes
     cloud->row_step = cloud->point_step * cloud->width;
     cloud->data.resize(cloud->row_step * cloud->height);
     cloud->is_dense = true;
@@ -138,7 +138,7 @@ void MirenaLidar::scan() {
             if (result.size() > 0) {
                 hit_point = relative_transform.xform((Vector3)result["position"]); //Get the point with relative coordinate to lidar source
             } else {
-                hit_point = to;
+                hit_point = relative_transform.xform(to); //If no result just outputs the maximun range
             }
 
             int index = (v * horizontal_resolution + h) * cloud->point_step;
