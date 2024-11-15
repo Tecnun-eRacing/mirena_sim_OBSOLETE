@@ -45,6 +45,7 @@ void MirenaImu::_process(double delta)
 
     // Update Angular Measures
     a_pos = get_global_transform().basis.get_euler();
+    aq_pos = get_global_transform().basis.get_quaternion();
     // Speed
     a_speed = (a_pos - a_prev_pos) / delta;
     // Accel
@@ -67,9 +68,11 @@ void MirenaImu::_process(double delta)
         p_pose->pose.position.x = l_pos.x;
         p_pose->pose.position.y = l_pos.y;
         p_pose->pose.position.z = l_pos.z;
-        p_pose->pose.orientation.x = a_pos.x;
-        p_pose->pose.orientation.y = a_pos.y;
-        p_pose->pose.orientation.z = a_pos.z;
+        p_pose->pose.orientation.x = aq_pos.x;
+        p_pose->pose.orientation.y = aq_pos.y;
+        p_pose->pose.orientation.z = aq_pos.z;
+        p_pose->pose.orientation.w = aq_pos.w;
+
 
         // Speed
         p_speed->header.stamp = node->now();
