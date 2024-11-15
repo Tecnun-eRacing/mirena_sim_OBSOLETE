@@ -68,28 +68,12 @@ add_custom_command(
     COMMENT "Copying the built shared library to godot LibMirena extension folder"
 )
 
-# Set the godot export preset
-set(EXPORT_PRESET "Linux")
-
-# Custom target to export the Godot project
-add_custom_target(${PROJECT_NAME} ALL
-    COMMAND  mkdir -p "${CMAKE_BINARY_DIR}/MirenaSim" && godot --export-release "${EXPORT_PRESET}" "${CMAKE_BINARY_DIR}/MirenaSim/MirenaSim"
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/MirenaSim
-    COMMENT "Exporting Godot project with built shared library to ${CMAKE_BINARY_DIR}"
-)
-
-add_dependencies(${PROJECT_NAME} mirena_ros)
-
-#Install simulator for usage
 
 #Install the simulator for usage
+#Copy the godot project to share on the install folder
 install(DIRECTORY 
-${CMAKE_BINARY_DIR}/MirenaSim
+MirenaSim
 DESTINATION share/${PROJECT_NAME}/
-FILE_PERMISSIONS 
-        OWNER_READ OWNER_WRITE OWNER_EXECUTE
-        GROUP_READ GROUP_EXECUTE
-        WORLD_READ WORLD_EXECUTE
 )
 
 #Install the launchfiles
