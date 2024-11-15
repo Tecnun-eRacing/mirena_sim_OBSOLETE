@@ -39,6 +39,7 @@ namespace godot
         Vector3 l_prev_speed;
         Vector3 l_accel;
         // IMU Angular Calculation Vectors
+        Quaternion aq_pos; //For pose
         Vector3 a_pos;
         Vector3 a_prev_pos;
         Vector3 a_speed;
