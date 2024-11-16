@@ -9,7 +9,9 @@
 #include <godot_cpp/classes/physics_ray_query_parameters3d.hpp>
 #include <godot_cpp/classes/world3d.hpp>
 #include <cmath>
+#include <random> //For additive noise
 
+    
 using namespace godot;
 
 void MirenaLidar::_bind_methods() {
@@ -17,6 +19,8 @@ void MirenaLidar::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_publish_rate"), &MirenaLidar::get_publish_rate);
     ClassDB::bind_method(D_METHOD("set_max_range", "range"), &MirenaLidar::set_max_range);
     ClassDB::bind_method(D_METHOD("get_max_range"), &MirenaLidar::get_max_range);
+    ClassDB::bind_method(D_METHOD("set_noise_dev", "deviation"), &MirenaLidar::set_noise_dev);
+    ClassDB::bind_method(D_METHOD("get_noise_dev"), &MirenaLidar::get_noise_dev);
     ClassDB::bind_method(D_METHOD("set_horizontal_resolution", "resolution"), &MirenaLidar::set_horizontal_resolution);
     ClassDB::bind_method(D_METHOD("get_horizontal_resolution"), &MirenaLidar::get_horizontal_resolution);
     ClassDB::bind_method(D_METHOD("set_vertical_resolution", "resolution"), &MirenaLidar::set_vertical_resolution);
@@ -32,6 +36,7 @@ void MirenaLidar::_bind_methods() {
     //Add properties
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_range"), "set_max_range", "get_max_range");
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "noise_dev"), "set_noise_dev", "get_noise_dev");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_resolution"), "set_horizontal_resolution", "get_horizontal_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_resolution"), "set_vertical_resolution", "get_vertical_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vertical_fov"), "set_vertical_fov", "get_vertical_fov");
@@ -41,11 +46,13 @@ void MirenaLidar::_bind_methods() {
 
 MirenaLidar::MirenaLidar() : publish_rate(0.0),last_publish_time(0.0),max_range(100.0), horizontal_resolution(360), vertical_resolution(16), 
              vertical_fov(30.0), horizontal_fov(360.0), collision_mask(1) {
+     //ROS related
     if (!rclcpp::ok()) {
         rclcpp::init(0, nullptr);
     }
     node = rclcpp::Node::make_shared("MirenaLidar");
     pub = node->create_publisher<sensor_msgs::msg::PointCloud2>("lidar_points", 10);
+
 }
 
 MirenaLidar::~MirenaLidar() {
@@ -57,6 +64,9 @@ double MirenaLidar::get_publish_rate() const { return publish_rate; }
 
 void MirenaLidar::set_max_range(double p_range) { max_range = p_range; }
 double MirenaLidar::get_max_range() const { return max_range; }
+
+void MirenaLidar::set_noise_dev(double p_dev) { noise_dev = p_dev; }
+double MirenaLidar::get_noise_dev() const { return noise_dev; }
 
 void MirenaLidar::set_horizontal_resolution(int p_resolution) { horizontal_resolution = p_resolution; }
 int MirenaLidar::get_horizontal_resolution() const { return horizontal_resolution; }
@@ -134,9 +144,17 @@ void MirenaLidar::scan() {
 
             Dictionary result = space_state->intersect_ray(&ray_query);
 
-            Vector3 hit_point;
+            Vector3 hit_point; //For result
+
+
             if (result.size() > 0) {
-                hit_point = relative_transform.xform((Vector3)result["position"]); //Get the point with relative coordinate to lidar source
+                //Generate gaussian noise
+                static std::random_device rd;
+                static std::mt19937 generator(rd());
+                std::normal_distribution<double> distribution(0, noise_dev);
+                //Apply the gaussian noise to result measure
+                hit_point = (Vector3)result["position"] + direction * distribution(generator);
+                hit_point = relative_transform.xform(hit_point); //Get the point with relative coordinate to lidar source
             } else {
                 hit_point = relative_transform.xform(to); //If no result just outputs the maximun range
             }

@@ -28,9 +28,11 @@ namespace godot
         double vertical_fov;
         double horizontal_fov;
         uint32_t collision_mask;
+        double noise_dev;
         //Rate
         double publish_rate;
         double last_publish_time;
+
 
     protected:
         static void _bind_methods();
@@ -49,6 +51,9 @@ namespace godot
 
         void set_max_range(double p_range);
         double get_max_range() const;
+
+        void set_noise_dev(double p_dev);
+        double get_noise_dev() const;
 
         void set_horizontal_resolution(int p_resolution);
         int get_horizontal_resolution() const;
