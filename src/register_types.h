@@ -3,6 +3,7 @@
 
 #include <godot_cpp/core/class_db.hpp>
 //Modules
+#include "ros_node3d.hpp"
 #include "mirena_car.hpp"
 #include "mirena_cam.hpp"
 #include "mirena_lidar.hpp"

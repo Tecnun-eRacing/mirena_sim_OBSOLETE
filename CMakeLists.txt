@@ -31,6 +31,7 @@ include_directories(${geometry_msgs_INCLUDE_DIRS})
 # Source files for the project (your GDExtension and ROS 2 code)
 include_directories(src)
 set(SOURCES
+    src/ros_node3d.cpp
     src/mirena_car.cpp
     src/mirena_cam.cpp
     src/mirena_lidar.cpp
