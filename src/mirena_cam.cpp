@@ -153,7 +153,7 @@ void MirenaCam::_process(double delta)
 
         frame = std::make_unique<sensor_msgs::msg::Image>();
         frame->header.stamp = node->now();
-        frame->header.frame_id = "camera_frame";
+        frame->header.frame_id = "MirenaLidar";
         frame->height = img->get_height();
         frame->width = img->get_width();
         frame->encoding = "rgb8";
@@ -175,7 +175,7 @@ void MirenaCam::_process(double delta)
         double focal_length_pixels = (resolution.y / 2.0) / tan(fov * M_PI / 360.0);  // divide by 2 for half-angle
         //Fill message
         info->header.stamp = node->now();
-        info->header.frame_id = (topic_name + "_frame").c_str();
+        info->header.frame_id = "MirenaLidar";
         info->height = resolution.y;
         info->width = resolution.x;
         info->distortion_model = "plumb_bob";
