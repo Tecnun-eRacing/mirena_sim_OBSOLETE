@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include "ros_node3d.hpp"
 #include <omp.h>
 
 // ROS
@@ -12,14 +14,12 @@
 
 namespace godot
 {
-
-    class MirenaLidar : public Node3D
+    class MirenaLidar : public RosNode3D
     {
-        GDCLASS(MirenaLidar, Node3D)
+        GDCLASS(MirenaLidar, RosNode3D)
 
     private:
         // ROS publisher
-        rclcpp::Node::SharedPtr node;
         rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pub;
 
         double max_range;
@@ -29,10 +29,6 @@ namespace godot
         double horizontal_fov;
         uint32_t collision_mask;
         double noise_dev;
-        //Rate
-        double publish_rate;
-        double last_publish_time;
-
 
     protected:
         static void _bind_methods();
@@ -41,13 +37,11 @@ namespace godot
         MirenaLidar();
         ~MirenaLidar();
 
-		void _physics_process(double delta) override;
-
-
-
-        //Getters and Setters
-        void set_publish_rate(double p_rate);
-        double get_publish_rate() const;
+        void _ros_ready() override;
+        void _ros_process(double delta)override;
+        // Getters and Setters
+        void set_refresh_rate(double r_rate);
+        double get_refresh_rate() const;
 
         void set_max_range(double p_range);
         double get_max_range() const;

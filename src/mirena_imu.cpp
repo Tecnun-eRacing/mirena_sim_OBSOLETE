@@ -5,24 +5,11 @@ using namespace godot;
 
 void MirenaImu::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("set_publish_rate", "p_rate"), &MirenaImu::set_publish_rate);
-    ClassDB::bind_method(D_METHOD("get_publish_rate"), &MirenaImu::get_publish_rate);
 
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
 }
 
-MirenaImu::MirenaImu() : publish_rate(0.0), last_publish_time(0.0)
+MirenaImu::MirenaImu()
 {
-    if (!rclcpp::ok())
-    {
-        rclcpp::init(0, nullptr);
-    }
-    node = rclcpp::Node::make_shared("MirenaImu");
-    godot::UtilityFunctions::print("MirenaImu Created");
-    //Create Publishers
-    posePub = node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pos", 10);
-    speedPub = node->create_publisher<geometry_msgs::msg::TwistStamped>("car_speed", 10);
-    accelPub = node->create_publisher<geometry_msgs::msg::AccelStamped>("car_accel", 10);
 }
 
 MirenaImu::~MirenaImu()
@@ -30,9 +17,16 @@ MirenaImu::~MirenaImu()
 }
 
 //----------------------------------------------------------[Godot RUntime]----------------------------------------------//
-void MirenaImu::_process(double delta)
+void MirenaImu::_ros_ready()
 {
-    last_publish_time += delta;
+    // Create Publishers
+    posePub = ros_node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pos", 10);
+    speedPub = ros_node->create_publisher<geometry_msgs::msg::TwistStamped>("car_speed", 10);
+    accelPub = ros_node->create_publisher<geometry_msgs::msg::AccelStamped>("car_accel", 10);
+}
+
+void MirenaImu::_ros_process(double delta)
+{
     // Update Linear Measures
     l_pos = get_global_transform().origin;
     // Speed
@@ -54,57 +48,45 @@ void MirenaImu::_process(double delta)
     a_prev_pos = a_pos;
     a_prev_speed = a_speed;
 
-    if (last_publish_time >= 1.0 / publish_rate)
-    {
-        // Create msgs to send
-        auto p_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
-        auto p_speed = std::make_unique<geometry_msgs::msg::TwistStamped>();
-        auto p_accel = std::make_unique<geometry_msgs::msg::AccelStamped>();
+    // Create msgs to send
+    auto p_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
+    auto p_speed = std::make_unique<geometry_msgs::msg::TwistStamped>();
+    auto p_accel = std::make_unique<geometry_msgs::msg::AccelStamped>();
 
-        // Populate the frames
-        // Pose
-        p_pose->header.stamp = node->now();
-        p_pose->header.frame_id = "car_pose";
-        p_pose->pose.position.x = l_pos.x;
-        p_pose->pose.position.y = l_pos.y;
-        p_pose->pose.position.z = l_pos.z;
-        p_pose->pose.orientation.x = aq_pos.x;
-        p_pose->pose.orientation.y = aq_pos.y;
-        p_pose->pose.orientation.z = aq_pos.z;
-        p_pose->pose.orientation.w = aq_pos.w;
+    // Populate the frames
+    // Pose
+    p_pose->header.stamp = ros_node->now();
+    p_pose->header.frame_id = "world";
+    p_pose->pose.position.x = l_pos.x;
+    p_pose->pose.position.y = l_pos.y;
+    p_pose->pose.position.z = l_pos.z;
+    p_pose->pose.orientation.x = aq_pos.x;
+    p_pose->pose.orientation.y = aq_pos.y;
+    p_pose->pose.orientation.z = aq_pos.z;
+    p_pose->pose.orientation.w = aq_pos.w;
 
+    // Speed
+    p_speed->header.stamp = ros_node->now();
+    p_speed->header.frame_id = ros_node->get_name();
+    p_speed->twist.linear.x = l_speed.x;
+    p_speed->twist.linear.y = l_speed.y;
+    p_speed->twist.linear.z = l_speed.z;
+    p_speed->twist.angular.x = a_speed.x;
+    p_speed->twist.angular.y = a_speed.y;
+    p_speed->twist.angular.z = a_speed.z;
 
-        // Speed
-        p_speed->header.stamp = node->now();
-        p_speed->header.frame_id = "car_speed";
-        p_speed->twist.linear.x = l_speed.x;
-        p_speed->twist.linear.y = l_speed.y;
-        p_speed->twist.linear.z = l_speed.z;
-        p_speed->twist.angular.x = a_speed.x;
-        p_speed->twist.angular.y = a_speed.y;
-        p_speed->twist.angular.z = a_speed.z;
+    // Accel
+    p_accel->header.stamp = ros_node->now();
+    p_accel->header.frame_id = ros_node->get_name();
+    p_accel->accel.linear.x = l_accel.x;
+    p_accel->accel.linear.y = l_accel.y;
+    p_accel->accel.linear.z = l_accel.z;
+    p_accel->accel.angular.x = a_accel.x;
+    p_accel->accel.angular.y = a_accel.y;
+    p_accel->accel.angular.z = a_accel.z;
 
-        // Accel
-        p_accel->header.stamp = node->now();
-        p_accel->header.frame_id = "car_accel";
-        p_accel->accel.linear.x = l_speed.x;
-        p_accel->accel.linear.y = l_speed.y;
-        p_accel->accel.linear.z = l_speed.z;
-        p_accel->accel.angular.x = a_speed.x;
-        p_accel->accel.angular.y = a_speed.y;
-        p_accel->accel.angular.z = a_speed.z;
-
-        // Publish all data
-        posePub->publish(std::move(p_pose));
-        speedPub->publish(std::move(p_speed));
-        accelPub->publish(std::move(p_accel));
-
-        rclcpp::spin_some(node);
-        last_publish_time = 0.0;
-    }
+    // Publish all data
+    posePub->publish(std::move(p_pose));
+    speedPub->publish(std::move(p_speed));
+    accelPub->publish(std::move(p_accel));
 }
-
-//----------------------------------------------------------[Godot Getters and setters]----------------------------------------------//
-
-void MirenaImu::set_publish_rate(double p_rate) { publish_rate = p_rate; }
-double MirenaImu::get_publish_rate() const { return publish_rate; }
