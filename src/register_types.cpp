@@ -11,6 +11,7 @@ void mirenasim_init(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(RosTime);
 	GDREGISTER_CLASS(RosNode3D);
 	GDREGISTER_CLASS(MirenaCar);
 	GDREGISTER_CLASS(MirenaCam);
