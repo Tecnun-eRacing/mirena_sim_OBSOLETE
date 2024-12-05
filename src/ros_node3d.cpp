@@ -7,15 +7,10 @@ namespace godot
 
     RosNode3D::RosNode3D()
     {
-        if (!rclcpp::ok())
-        {
-            rclcpp::init(0, nullptr);
-        }
     }
 
     RosNode3D::~RosNode3D()
     {
-
     }
 
     void RosNode3D::_ready()
@@ -24,9 +19,13 @@ namespace godot
         { // Comprobamos si estamos en el editor
             // Use object name for ROS node name
             String node_name = get_name();
-            ros_node = std::make_shared<rclcpp::Node>(node_name.utf8().get_data());
+            // Obligamos al nodo a usar el tiempo simulado
+            rclcpp::NodeOptions options;
+            options.parameter_overrides().push_back(rclcpp::Parameter("use_sim_time", true));
+
+            ros_node = std::make_shared<rclcpp::Node>(node_name.utf8().get_data(),options);
             tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*ros_node);
-            //Look for parent object
+            // Look for parent object
 
             _ros_ready();
         }
@@ -89,7 +88,7 @@ namespace godot
             std::string parent_name(reinterpret_cast<const char *>(parent_ros_node->get_name().to_utf8_buffer().ptr()), parent_ros_node->get_name().to_utf8_buffer().size());
             transform.header.frame_id = parent_name;
             // Get global transform
-            nodeTransform = parent_ros_node->get_global_transform().affine_inverse()*nodeTransform; // Compute relative transform
+            nodeTransform = parent_ros_node->get_global_transform().affine_inverse() * nodeTransform; // Compute relative transform
         }
         else
         {
