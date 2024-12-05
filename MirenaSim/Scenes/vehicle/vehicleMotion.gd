@@ -12,5 +12,3 @@ func _process(delta):
 	steering = $MirenaCar.steer_angle
 	engine_force = $MirenaCar.gas*ENGINE_F/255
 	brake = $MirenaCar.brake * BRAKE_F/255
-	$MirenaCamL.publish_rate = 30.0
-	$MirenaCamR.publish_rate = 30.0

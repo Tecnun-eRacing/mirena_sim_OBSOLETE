@@ -72,4 +72,7 @@ ok_button_text = "Open"
 file_mode = 0
 access = 2
 
+[node name="RosTime" type="RosTime" parent="."]
+use_sim_time = true
+
 [connection signal="file_selected" from="FileDialog" to="." method="_on_file_selected"]

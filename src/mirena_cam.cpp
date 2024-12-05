@@ -8,10 +8,7 @@ using namespace godot;
 
 void MirenaCam::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("set_publish_rate", "rate"), &MirenaCam::set_publish_rate);
-    ClassDB::bind_method(D_METHOD("get_publish_rate"), &MirenaCam::get_publish_rate);
-    ClassDB::bind_method(D_METHOD("set_topic_name", "name"), &MirenaCam::set_topic_name);
-    ClassDB::bind_method(D_METHOD("get_topic_name"), &MirenaCam::get_topic_name);
+
     ClassDB::bind_method(D_METHOD("set_resolution", "resolution"), &MirenaCam::set_resolution);
     ClassDB::bind_method(D_METHOD("get_resolution"), &MirenaCam::get_resolution);
     ClassDB::bind_method(D_METHOD("set_use_environment", "enable"), &MirenaCam::set_use_environment);
@@ -49,15 +46,10 @@ void MirenaCam::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_RANGE, "-10,10,0.01"), "set_v_offset", "get_v_offset");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "doppler_tracking"), "set_doppler_tracking", "get_doppler_tracking");
     // NODE
-    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "topic_name"), "set_topic_name", "get_topic_name");
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "resolution"), "set_resolution", "get_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_environment"), "set_use_environment", "get_use_environment");
 }
-MirenaCam::MirenaCam() : publish_rate(0),
-                         topic_name("cam0"),
-                         last_publish_time(0.0),
-                         resolution(Vector2i(640, 480)),
+MirenaCam::MirenaCam() : resolution(Vector2i(640, 480)),
                          use_environment(true),
                          viewport(nullptr),
                          camera(nullptr), fov(75.0),
@@ -69,25 +61,20 @@ MirenaCam::MirenaCam() : publish_rate(0),
                          v_offset(0.0),
                          doppler_tracking(false)
 {
-
-    // Initialize ROS2
-    if (!rclcpp::ok())
-    {
-        rclcpp::init(0, nullptr);
-    }
-    node = rclcpp::Node::make_shared("MirenaCam");
-    image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name + "/image", 10);
-    info_publisher = node->create_publisher<sensor_msgs::msg::CameraInfo>(topic_name + "/camera_info", 10);
-
 }
 
 MirenaCam::~MirenaCam()
 {
-    _cleanup();
+   // _cleanup();
 }
 
 void MirenaCam::_cleanup()
 {
+    if (camera_transform)
+    {
+        memdelete(camera_transform);
+        camera_transform = nullptr;
+    }
     if (camera)
     {
         memdelete(camera);
@@ -100,19 +87,14 @@ void MirenaCam::_cleanup()
     }
 }
 
-void MirenaCam::_enter_tree()
-{
-    Node3D::_enter_tree();
-}
 
-void MirenaCam::_exit_tree()
+void MirenaCam::_ros_ready()
 {
-    _cleanup();
-    Node3D::_exit_tree();
-}
 
-void MirenaCam::_ready()
-{
+    // Create publishers
+    image_publisher = ros_node->create_publisher<sensor_msgs::msg::Image>(std::string(ros_node->get_name()) + "/image", 10);
+    info_publisher = ros_node->create_publisher<sensor_msgs::msg::CameraInfo>(std::string(ros_node->get_name()) + "/camera_info", 10);
+
     // Create viewport
     viewport = memnew(SubViewport);
     viewport->set_size(resolution);
@@ -122,6 +104,9 @@ void MirenaCam::_ready()
 
     // Create camera
     camera = memnew(Camera3D);
+    // Create transform
+    camera_transform = memnew(RemoteTransform3D);
+    add_child(camera_transform); // Add to inherit RosNode3D transform
     _update_camera_settings();
     viewport->add_child(camera);
 
@@ -136,71 +121,59 @@ void MirenaCam::_ready()
     }
 
     add_child(viewport);
+    camera_transform->set_remote_node(camera->get_path()); // Make camera follow
 }
 
-void MirenaCam::_process(double delta)
+void MirenaCam::_ros_process(double delta)
 {
-    last_publish_time += delta;
-    if (camera)
-        camera->set_global_transform(get_global_transform()); // Set camera position to node position if camera exists
 
-    if (last_publish_time >= 1.0 / publish_rate && viewport) //Enforce rate
-    {
-        //Publish the viewport rendered image
-        Ref<Image> img = viewport->get_texture()->get_image();
-        if (img.is_null())
-            return;
+    // Publish the viewport rendered image
+    Ref<Image> img = viewport->get_texture()->get_image();
+    if (img.is_null())
+        return;
 
-        frame = std::make_unique<sensor_msgs::msg::Image>();
-        frame->header.stamp = node->now();
-        frame->header.frame_id = "MirenaLidar";
-        frame->height = img->get_height();
-        frame->width = img->get_width();
-        frame->encoding = "rgb8";
-        frame->is_bigendian = false;
-        frame->step = img->get_width() * 3;
+    frame = std::make_unique<sensor_msgs::msg::Image>();
+    frame->header.stamp = ros_node->now();
+    frame->header.frame_id = ros_node->get_name();
+    frame->height = img->get_height();
+    frame->width = img->get_width();
+    frame->encoding = "rgb8";
+    frame->is_bigendian = false;
+    frame->step = img->get_width() * 3;
 
-        // Copy image data
-        PackedByteArray data = img->get_data();
-        frame->data.resize(data.size());
-        std::memcpy(frame->data.data(), data.ptrw(), data.size());
+    // Copy image data
+    PackedByteArray data = img->get_data();
+    frame->data.resize(data.size());
+    std::memcpy(frame->data.data(), data.ptrw(), data.size());
 
-        // Publish
-        image_publisher->publish(std::move(frame));
-        last_publish_time = 0.0;
-        
-        //Publish Camera Info
-        info = std::make_unique<sensor_msgs::msg::CameraInfo>();
-        // Calculate focal length based on FOV
-        double focal_length_pixels = (resolution.y / 2.0) / tan(fov * M_PI / 360.0);  // divide by 2 for half-angle
-        //Fill message
-        info->header.stamp = node->now();
-        info->header.frame_id = "MirenaLidar";
-        info->height = resolution.y;
-        info->width = resolution.x;
-        info->distortion_model = "plumb_bob";
-        info->d = std::vector<double>(5, 0.0);  // No distortion
-        info->k = { //Camera matrix
-            focal_length_pixels, 0.0, resolution.x  / 2.0,
-            0.0, focal_length_pixels, resolution.y  / 2.0,
-            0.0, 0.0, 1.0
-        };
-        info->r = { //Rectification matrix   
-            1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0,
-            0.0, 0.0, 1.0
-        };
+    // Publish
+    image_publisher->publish(std::move(frame));
 
-        info->p = { //Projection matrix
-            focal_length_pixels, 0.0, resolution.x / 2.0, 0.0,
-            0.0, focal_length_pixels, resolution.y / 2.0, 0.0,
-            0.0, 0.0, 1.0, 0.0
-        };
+    // Publish Camera Info
+    info = std::make_unique<sensor_msgs::msg::CameraInfo>();
+    // Calculate focal length based on FOV
+    double focal_length_pixels = (resolution.y / 2.0) / tan(fov * M_PI / 360.0); // divide by 2 for half-angle
+    // Fill message
+    info->header.stamp = ros_node->now();
+    info->header.frame_id = "MirenaLidar";
+    info->height = resolution.y;
+    info->width = resolution.x;
+    info->distortion_model = "plumb_bob";
+    info->d = std::vector<double>(5, 0.0); // No distortion
+    info->k = {                            // Camera matrix
+               focal_length_pixels, 0.0, resolution.x / 2.0,
+               0.0, focal_length_pixels, resolution.y / 2.0,
+               0.0, 0.0, 1.0};
+    info->r = {// Rectification matrix
+               1.0, 0.0, 0.0,
+               0.0, 1.0, 0.0,
+               0.0, 0.0, 1.0};
+
+    info->p = {// Projection matrix
+               focal_length_pixels, 0.0, resolution.x / 2.0, 0.0,
+               0.0, focal_length_pixels, resolution.y / 2.0, 0.0,
+               0.0, 0.0, 1.0, 0.0};
     info_publisher->publish(std::move(info));
-    }
-
-    // Process ROS2 callbacks
-    rclcpp::spin_some(node);
 }
 
 void MirenaCam::_update_camera_settings()
@@ -208,6 +181,7 @@ void MirenaCam::_update_camera_settings()
     if (!camera)
         return;
 
+    camera->set_as_top_level(1);
     camera->set_fov(fov);
     camera->set_near(near_clip);
     camera->set_far(far_clip);
@@ -219,30 +193,6 @@ void MirenaCam::_update_camera_settings()
 }
 
 //-------------------------------------------------------------[Getters and setters]----------------------------------------------------------------------//
-void MirenaCam::set_publish_rate(float rate)
-{
-    publish_rate = rate;
-}
-
-float MirenaCam::get_publish_rate() const
-{
-    return publish_rate;
-}
-
-void MirenaCam::set_topic_name(String name)
-{
-    if (!name.is_empty())
-    { // Check no
-        topic_name = name.utf8().get_data();
-        image_publisher = node->create_publisher<sensor_msgs::msg::Image>(topic_name + "/image", 10); // Change the publisher
-        info_publisher = node->create_publisher<sensor_msgs::msg::CameraInfo>(topic_name + "/camera_info", 10);
-    }
-}
-
-String MirenaCam::get_topic_name() const
-{
-    return String(topic_name.c_str());
-}
 
 void MirenaCam::set_resolution(Vector2i res)
 {
