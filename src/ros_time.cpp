@@ -18,11 +18,6 @@ namespace godot
     {
         if (!Engine::get_singleton()->is_editor_hint())
         { // Comprobamos si estamos en el editor
-          // Ensure ROS2 is initialized
-            if (!rclcpp::ok())
-            {
-                rclcpp::init(0, nullptr);
-            }
             // Create ROS2 node
             ros_node = rclcpp::Node::make_shared("MirenaTime");
 
