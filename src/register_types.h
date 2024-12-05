@@ -2,6 +2,8 @@
 #define GDEXAMPLE_REGISTER_TYPES_H
 
 #include <godot_cpp/core/class_db.hpp>
+//ROS2 for context init
+#include <rclcpp/rclcpp.hpp>
 //Modules
 #include "ros_time.hpp"
 #include "ros_node3d.hpp"
