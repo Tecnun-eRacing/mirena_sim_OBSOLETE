@@ -2,6 +2,7 @@
 #define MIRENACAM_H
 // Godot
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/remote_transform3d.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/sub_viewport_container.hpp>
@@ -14,24 +15,21 @@
 #include "sensor_msgs/msg/camera_info.hpp"
 
 
+#include "ros_node3d.hpp"
 
 namespace godot
 {
 
-	class MirenaCam : public Node3D
+	class MirenaCam : public RosNode3D
 	{
-		GDCLASS(MirenaCam, Node3D)
+		GDCLASS(MirenaCam, RosNode3D)
 	private:
-		rclcpp::Node::SharedPtr node;
 		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher; //Image topic
 		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; //Camera Info topic
 
-		float publish_rate;
-		double last_publish_time;
-
 		//Internal Variables
-		std::string topic_name;
 		SubViewport *viewport;
+		RemoteTransform3D *camera_transform;
 		Camera3D *camera;
 		Vector2i resolution;
 		bool use_environment;
@@ -58,16 +56,10 @@ namespace godot
 		MirenaCam();
 		~MirenaCam();
 
-		void _enter_tree() override;
-		void _exit_tree() override;
-		void _ready() override;
-		void _process(double delta) override;
+		void _ros_ready() override;
+		void _ros_process(double delta) override;
 
 		// Configuration methods
-		void set_publish_rate(float rate);
-		float get_publish_rate() const;
-		void set_topic_name(String name);
-		String get_topic_name() const;
 		void set_resolution(Vector2i res);
 		Vector2i get_resolution() const;
 		void set_use_environment(bool enable);
