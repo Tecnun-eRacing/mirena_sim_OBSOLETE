@@ -2,13 +2,15 @@
 #define MIRENACAM_H
 // Godot
 #include <godot_cpp/classes/camera3d.hpp>
+#include <godot_cpp/classes/node3d.hpp>
+#include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/remote_transform3d.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
 #include <godot_cpp/classes/sub_viewport_container.hpp>
 #include <godot_cpp/classes/viewport_texture.hpp>
 #include <godot_cpp/core/class_db.hpp>
-
+#include <godot_cpp/classes/file_access.hpp>
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
@@ -36,6 +38,9 @@ namespace godot
 		// Create ROS2 message
 		std::unique_ptr<sensor_msgs::msg::Image> frame; 
 		std::unique_ptr<sensor_msgs::msg::CameraInfo> info; 
+
+		//Calibration
+		MeshInstance3D* find_mesh_in_node(Node3D *node);
 
 		// Camera settings
 		float fov;
@@ -70,6 +75,10 @@ namespace godot
 		Vector3 get_camera_position() const;
 		void set_camera_rotation(Vector3 rotation);
 		Vector3 get_camera_rotation() const;
+
+
+		//Training data generation
+		void dump_group_bbox_to_yolo(const StringName& group_name);
 
 
 		// Camera settings methods

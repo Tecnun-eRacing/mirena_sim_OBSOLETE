@@ -17,8 +17,10 @@ func loadTrack(path : String):
 		match cone["type"]:
 			"blue":
 				model = load("res://Models/Cone/bCone.glb").instantiate() 
+				model.set_meta("type","blue")
 			"yellow":
 				model = load("res://Models/Cone/yCone.glb").instantiate() 
+				model.set_meta("type","yellow")
 		model.translate(Vector3(cone["x"],0,cone["y"]))
 		$Track.add_child(model)
 		model.add_to_group("Cones")
@@ -32,9 +34,9 @@ func loadTrack(path : String):
 	$vehicle.get_rid(),
 	PhysicsServer3D.BODY_STATE_TRANSFORM,
 	Transform3D.IDENTITY.rotated(Vector3.UP, track["spawn"]["theta"])
-	.translated(Vector3(track["spawn"]["x"],0,track["spawn"]["y"]))
-	
+	.translated(Vector3(track["spawn"]["x"],0,track["spawn"]["y"]))	
 	)
+	print("Loaded track")
 
 
 	
