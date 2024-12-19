@@ -1,13 +1,4 @@
 #include "mirena_cam.hpp"
-#include <godot_cpp/classes/viewport.hpp>
-#include <godot_cpp/classes/world3d.hpp>
-#include <godot_cpp/variant/rect2.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-#include <godot_cpp/classes/rendering_server.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/classes/time.hpp>
-#include <vector>
 
 using namespace godot;
 
@@ -25,6 +16,8 @@ void MirenaCam::_bind_methods()
 
     // Yolo dumper function
     ClassDB::bind_method(D_METHOD("dump_group_bbox_to_yolo", "groupname"), &MirenaCam::dump_group_bbox_to_yolo);
+    ClassDB::bind_method(D_METHOD("set_dataset_path", "path"), &MirenaCam::set_dataset_path);
+    ClassDB::bind_method(D_METHOD("get_dataset_path"), &MirenaCam::get_dataset_path);
 
     // Camera settings bindings
     ClassDB::bind_method(D_METHOD("set_fov", "fov"), &MirenaCam::set_fov);
@@ -56,6 +49,9 @@ void MirenaCam::_bind_methods()
     // NODE
     ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "resolution"), "set_resolution", "get_resolution");
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_environment"), "set_use_environment", "get_use_environment");
+
+    // Yolo trainer path
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "Datase Path", PROPERTY_HINT_GLOBAL_DIR), "set_dataset_path", "get_dataset_path");
 }
 MirenaCam::MirenaCam() : resolution(Vector2i(640, 480)),
                          use_environment(true),
@@ -67,7 +63,8 @@ MirenaCam::MirenaCam() : resolution(Vector2i(640, 480)),
                          size_ortho(10.0),
                          h_offset(0.0),
                          v_offset(0.0),
-                         doppler_tracking(false)
+                         doppler_tracking(false),
+                         datasetPath(" ")
 {
 }
 
@@ -199,7 +196,6 @@ void MirenaCam::_update_camera_settings()
     camera->set_doppler_tracking(doppler_tracking ? Camera3D::DOPPLER_TRACKING_IDLE_STEP : Camera3D::DOPPLER_TRACKING_DISABLED);
 }
 
-// Training data gather
 void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
 {
     String yolo_annotations;
@@ -229,28 +225,24 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
         }
 
         // Get Bounding box  (Origin + Size)
-        AABB object_aabb = find_mesh_in_node(node_3d)->get_aabb();
+        // Mesh object
+        MeshInstance3D *mesh = find_mesh_in_node(node_3d);
+        // Get AABB in global space using the mesh transform
+        Transform3D mesh_transform = mesh->get_global_transform();
+        AABB mesh_aabb = mesh_transform.xform(mesh->get_aabb());
 
         // Get the corners of the AABB
-        Vector3 position = node_3d->to_global(object_aabb.position); // Get position in global space
-        Vector3 center = node_3d->to_global(object_aabb.get_center()); // Get center
-        Vector3 size = object_aabb.size;
+        Vector3 position = mesh_aabb.position; // Get position in local space
+        Vector3 size = mesh_aabb.size;
         Vector3 corners[8] = {// Cube
-                              position,
-                              position + Vector3(size.x, 0, 0),
-                              position + Vector3(0, size.y, 0),
-                              position + Vector3(size.x, size.y, 0),
-                              position + Vector3(0, 0, size.z),
-                              position + Vector3(size.x, 0, size.z),
-                              position + Vector3(0, size.y, size.z),
-                              position + size};
-
-        // Rotate the AABB corners to face camera
-        Quaternion rotation = node_3d->get_rotation();
-        for (int i = 0; i < 8; ++i)
-        {
-            corners[i] = rotation.xform(corners[i] - center) + center;
-        }
+                              mesh_aabb.position,
+                              mesh_aabb.position + Vector3(size.x, 0, 0),
+                              mesh_aabb.position + Vector3(0, size.y, 0),
+                              mesh_aabb.position + Vector3(size.x, size.y, 0),
+                              mesh_aabb.position + Vector3(0, 0, size.z),
+                              mesh_aabb.position + Vector3(size.x, 0, size.z),
+                              mesh_aabb.position + Vector3(0, size.y, size.z),
+                              mesh_aabb.position + size};
 
         // Project each corner to screen space
         std::vector<Vector2> projected_corners;
@@ -281,7 +273,7 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
         float height = max_y - min_y;
 
         // Check if Cone is in viewport and is big enough (min dim > 20 pix)
-        if (std::min(x, y) > 0 && max_x <= get_resolution().x && max_y <= get_resolution().y && std::min(width, height) > 5)
+        if (std::min(x, y) > 0 && max_x <= get_resolution().x && max_y <= get_resolution().y && std::min(width, height) > 8)
         {
 
             // Decide type
@@ -302,15 +294,19 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
     }
     godot::UtilityFunctions::print(yolo_annotations);
     // Store on file with pic
+    // Ensure dirs
+    Ref<DirAccess> dir = DirAccess::open("");
+    dir->dir_exists(datasetPath + "/images") ? OK : dir->make_dir_recursive(datasetPath + "/images");
+    dir->dir_exists(datasetPath + "/labels") ? OK : dir->make_dir_recursive(datasetPath + "/labels");
+
     // Get time for name
     String time = Time::get_singleton()->get_datetime_string_from_system();
-
     // Pic
     Ref<Image> img = viewport->get_texture()->get_image();
-    img->save_png("/tmp/MirenaData/images/" + time + ".png");
+    img->save_png(datasetPath + "/images/" + time + ".png");
 
     // Anotations
-    Ref<FileAccess> file = FileAccess::open("/tmp/MirenaData/labels/" + time + ".txt", FileAccess::WRITE);
+    Ref<FileAccess> file = FileAccess::open(datasetPath + "/labels/" + time + ".txt", FileAccess::WRITE);
     if (file.is_valid())
     {
         file->store_string(yolo_annotations);
@@ -346,6 +342,16 @@ MeshInstance3D *MirenaCam::find_mesh_in_node(Node3D *node)
 }
 
 //-------------------------------------------------------------[Getters and setters]----------------------------------------------------------------------//
+
+void MirenaCam::set_dataset_path(String path)
+{
+    datasetPath = path;
+}
+
+String MirenaCam::get_dataset_path(void)
+{
+    return datasetPath;
+}
 
 void MirenaCam::set_resolution(Vector2i res)
 {

@@ -13,6 +13,7 @@ config_version=5
 config/name="MirenaSim"
 run/main_scene="res://Scenes/SimEnv.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
+run/max_fps=60
 config/icon="res://icon.png"
 
 [editor_plugins]
@@ -44,4 +45,3 @@ driving_mode={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_interpolation=true

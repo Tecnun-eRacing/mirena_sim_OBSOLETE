@@ -25,7 +25,7 @@ func _process(delta):
 			_:
 				pass
 
-	if Input.is_action_just_pressed("dump_camera"):
+	if Input.is_action_just_pressed("dump_camera") or Input.is_joy_button_pressed(0, 0):
 		$MirenaCar/MirenaCam.dump_group_bbox_to_yolo("Cones")
 		
 	match drive_mode:
@@ -50,8 +50,8 @@ func manual_drive():
 		brake_input = 1
 	else:
 		brake_input = 0
-	
-	print(brake_input)
+
+		
 	# Move Car
 	steering = MAX_STEER * steering_input
 	engine_force = ENGINE_F * accelerator_input;

@@ -11,11 +11,21 @@
 #include <godot_cpp/classes/viewport_texture.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/core/error_macros.hpp>
+#include <godot_cpp/classes/viewport.hpp>
+#include <godot_cpp/classes/world3d.hpp>
+#include <godot_cpp/variant/rect2.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/rendering_server.hpp>
+#include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/classes/time.hpp>
+#include <vector>
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
-
 
 #include "ros_node3d.hpp"
 
@@ -26,21 +36,23 @@ namespace godot
 	{
 		GDCLASS(MirenaCam, RosNode3D)
 	private:
-		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher; //Image topic
-		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; //Camera Info topic
+		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher;	   // Image topic
+		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; // Camera Info topic
 
-		//Internal Variables
+		// Internal Variables
 		SubViewport *viewport;
 		RemoteTransform3D *camera_transform;
 		Camera3D *camera;
 		Vector2i resolution;
 		bool use_environment;
 		// Create ROS2 message
-		std::unique_ptr<sensor_msgs::msg::Image> frame; 
-		std::unique_ptr<sensor_msgs::msg::CameraInfo> info; 
+		std::unique_ptr<sensor_msgs::msg::Image> frame;
+		std::unique_ptr<sensor_msgs::msg::CameraInfo> info;
 
-		//Calibration
-		MeshInstance3D* find_mesh_in_node(Node3D *node);
+		// Calibration and yolo training
+		MeshInstance3D *find_mesh_in_node(Node3D *node);
+		String datasetPath; // Path to store generated output
+		bool yolo_trigger;//Acts as trigger function
 
 		// Camera settings
 		float fov;
@@ -76,10 +88,10 @@ namespace godot
 		void set_camera_rotation(Vector3 rotation);
 		Vector3 get_camera_rotation() const;
 
-
-		//Training data generation
-		void dump_group_bbox_to_yolo(const StringName& group_name);
-
+		// Training data generation
+		void dump_group_bbox_to_yolo(const StringName &group_name);
+		void set_dataset_path(String path);
+		String get_dataset_path(void);
 
 		// Camera settings methods
 		void set_fov(float p_fov);
