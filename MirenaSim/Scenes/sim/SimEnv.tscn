@@ -1,0 +1,105 @@
+[gd_scene load_steps=13 format=3 uid="uid://bgdafh7stxdw8"]
+
+[ext_resource type="Material" uid="uid://bsv8ux5upf4hf" path="res://Textures/Asphalt/Asphalt.tres" id="1_ahvmt"]
+[ext_resource type="Script" path="res://Scenes/sim/sim_env.gd" id="1_ux211"]
+[ext_resource type="Script" path="res://Scripts/track.gd" id="2_bp587"]
+[ext_resource type="Script" path="res://addons/freecam_3D/freecam.gd" id="3_dglw2"]
+[ext_resource type="PackedScene" uid="uid://lnlv7w6dktqx" path="res://Scenes/vehicle/racecar.tscn" id="4_g1k8q"]
+[ext_resource type="Script" path="res://Scenes/sim/debug_layer.gd" id="6_53h2j"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ok5qf"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_gnuhh"]
+points = PackedVector3Array(-50, 0, -50, -50, 0, 50, 50, 0, -50, 50, 0, 50)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_uv2q3"]
+lightmap_size_hint = Vector2i(502, 502)
+material = ExtResource("1_ahvmt")
+size = Vector2(100, 100)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_pi2tb"]
+sky_top_color = Color(0.395069, 0.561835, 0.727236, 1)
+ground_bottom_color = Color(0.396078, 0.560784, 0.72549, 1)
+ground_horizon_color = Color(0.396078, 0.560784, 0.72549, 1)
+
+[sub_resource type="Sky" id="Sky_640h4"]
+sky_material = SubResource("ProceduralSkyMaterial_pi2tb")
+process_mode = 1
+
+[sub_resource type="Environment" id="Environment_dtsg1"]
+background_mode = 1
+background_color = Color(0.529412, 0.807843, 0.921569, 1)
+sky = SubResource("Sky_640h4")
+ambient_light_color = Color(1, 0.992157, 0.878431, 1)
+
+[node name="SimEnviroment" type="Node"]
+script = ExtResource("1_ux211")
+
+[node name="vehicle" parent="." instance=ExtResource("4_g1k8q")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0.2, 0)
+mass = 200.0
+
+[node name="Track" type="Node3D" parent="."]
+script = ExtResource("2_bp587")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_ok5qf")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+top_level = true
+shape = SubResource("ConvexPolygonShape3D_gnuhh")
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_uv2q3")
+
+[node name="Freecam3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19.0969, 0)
+current = true
+script = ExtResource("3_dglw2")
+overlay_text = false
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_dtsg1")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.3559, 0)
+light_energy = 4.0
+omni_range = 100.0
+omni_attenuation = 0.0
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(720, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+
+[node name="RosTime" type="RosTime" parent="."]
+use_sim_time = true
+
+[node name="DebugLayer" type="CanvasLayer" parent="."]
+script = ExtResource("6_53h2j")
+
+[node name="FpsLabel" type="Label" parent="DebugLayer"]
+offset_left = 12.0
+offset_top = 10.0
+offset_right = 161.0
+offset_bottom = 37.0
+text = "FPS:"
+
+[node name="TimerLabel" type="Label" parent="DebugLayer"]
+offset_left = 13.0
+offset_top = 32.0
+offset_right = 162.0
+offset_bottom = 59.0
+text = "Timer:"
+
+[node name="FallenConesLabel" type="Label" parent="DebugLayer"]
+offset_left = 14.0
+offset_top = 57.0
+offset_right = 116.0
+offset_bottom = 80.0
+text = "Fallen Cones:"
+
+[connection signal="file_selected" from="FileDialog" to="." method="_on_file_selected"]

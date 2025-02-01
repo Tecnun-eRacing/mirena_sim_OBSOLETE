@@ -1,8 +1,19 @@
-[gd_scene load_steps=2 format=3 uid="uid://bclyhf4ovdjyf"]
+[gd_scene load_steps=4 format=3 uid="uid://bclyhf4ovdjyf"]
 
 [ext_resource type="Script" path="res://Scenes/cones/cone.gd" id="1_0u5f0"]
+[ext_resource type="ArrayMesh" uid="uid://dh5mqs7sykubf" path="res://Models/Cone/Meshes/BCone.res" id="2_ijuo8"]
+[ext_resource type="Shape3D" uid="uid://bl7w54xfjeqjn" path="res://Models/Cone/Meshes/collider.tres" id="3_f0iag"]
 
-[node name="Cone" type="Node3D"]
+[node name="Cone" type="RigidBody3D"]
+mass = 0.3
+contact_monitor = true
+max_contacts_reported = 1
 script = ExtResource("1_0u5f0")
 
 [node name="Model" type="MeshInstance3D" parent="."]
+mesh = ExtResource("2_ijuo8")
+
+[node name="Collider" type="CollisionShape3D" parent="."]
+shape = ExtResource("3_f0iag")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

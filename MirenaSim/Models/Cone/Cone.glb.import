@@ -3,7 +3,7 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c5ss6psoeux4m"
+uid="uid://bp2ckcb6i2fej"
 path="res://.godot/imported/Cone.glb-b155e1df84013f340e6c7af7423b9578.scn"
 
 [deps]
@@ -16,7 +16,7 @@ dest_files=["res://.godot/imported/Cone.glb-b155e1df84013f340e6c7af7423b9578.scn
 nodes/root_type=""
 nodes/root_name=""
 nodes/apply_root_scale=true
-nodes/root_scale=1.0
+nodes/root_scale=0.001
 nodes/import_as_skeleton_bones=false
 meshes/ensure_tangents=true
 meshes/generate_lods=true

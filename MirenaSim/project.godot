@@ -11,10 +11,14 @@ config_version=5
 [application]
 
 config/name="MirenaSim"
-run/main_scene="res://Scenes/SimEnv.tscn"
+run/main_scene="res://Scenes/sim/SimEnv.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 run/max_fps=60
 config/icon="res://icon.png"
+
+[autoload]
+
+Debug="*res://Scripts/Debug.gd"
 
 [editor_plugins]
 
@@ -23,6 +27,10 @@ enabled=PackedStringArray("res://addons/freecam_3D/plugin.cfg")
 [filesystem]
 
 import/blender/enabled=false
+
+[global_group]
+
+Cones="Todos los miembros de este grupo son conos"
 
 [input]
 
@@ -45,3 +53,6 @@ driving_mode={
 [physics]
 
 3d/run_on_separate_thread=true
+common/physics_jitter_fix=1.0
+3d/solver/solver_iterations=8
+common/physics_interpolation=true
