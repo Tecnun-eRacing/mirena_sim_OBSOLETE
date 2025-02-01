@@ -1,11 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://bclyhf4ovdjyf"]
+[gd_scene load_steps=5 format=3 uid="uid://bclyhf4ovdjyf"]
 
 [ext_resource type="Script" path="res://Scenes/cones/cone.gd" id="1_0u5f0"]
 [ext_resource type="ArrayMesh" uid="uid://dh5mqs7sykubf" path="res://Models/Cone/Meshes/BCone.res" id="2_ijuo8"]
 [ext_resource type="Shape3D" uid="uid://bl7w54xfjeqjn" path="res://Models/Cone/Meshes/collider.tres" id="3_f0iag"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_qppwo"]
+friction = 0.4
+bounce = 0.4
+
 [node name="Cone" type="RigidBody3D"]
 mass = 0.3
+physics_material_override = SubResource("PhysicsMaterial_qppwo")
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.2, 0)
 contact_monitor = true
 max_contacts_reported = 1
 script = ExtResource("1_0u5f0")
