@@ -53,7 +53,7 @@ void MirenaCam::_bind_methods()
     ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_environment"), "set_use_environment", "get_use_environment");
 
     // Yolo trainer path
-    ADD_PROPERTY(PropertyInfo(Variant::STRING, "Datase Path", PROPERTY_HINT_GLOBAL_DIR), "set_dataset_path", "get_dataset_path");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "Dataset Path", PROPERTY_HINT_GLOBAL_DIR), "set_dataset_path", "get_dataset_path");
 }
 MirenaCam::MirenaCam() : resolution(Vector2i(640, 480)),
                          use_environment(true),
@@ -222,77 +222,41 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
         if (!camera->is_position_in_frustum(node_3d->get_global_transform().origin))
         {
             godot::UtilityFunctions::print("Out of frustum");
-
             continue;
         }
 
-        // Get Bounding box  (Origin + Size)
-        // Mesh object
-        MeshInstance3D *mesh = find_mesh_in_node(node_3d);
-        // Get AABB in global space using the mesh transform
-        Transform3D mesh_transform = mesh->get_global_transform();
-        AABB mesh_aabb = mesh_transform.xform(mesh->get_aabb());
+        Rect2 cone_area = getScreenSize(node_3d);
+        Rect2 frame_area = Rect2(Vector2(0, 0), get_resolution()); // Frame rectangle
 
-        // Get the corners of the AABB
-        Vector3 position = mesh_aabb.position; // Get position in local space
-        Vector3 size = mesh_aabb.size;
-        Vector3 corners[8] = {// Cube
-                              mesh_aabb.position,
-                              mesh_aabb.position + Vector3(size.x, 0, 0),
-                              mesh_aabb.position + Vector3(0, size.y, 0),
-                              mesh_aabb.position + Vector3(size.x, size.y, 0),
-                              mesh_aabb.position + Vector3(0, 0, size.z),
-                              mesh_aabb.position + Vector3(size.x, 0, size.z),
-                              mesh_aabb.position + Vector3(0, size.y, size.z),
-                              mesh_aabb.position + size};
-
-        // Project each corner to screen space
-        std::vector<Vector2> projected_corners;
-        for (const auto &corner : corners)
+        if (frame_area.encloses(cone_area) && cone_area.get_area() < 40) // Area mayor que 40 pixeles cuadrados o fuera de ella
         {
-            projected_corners.push_back(camera->unproject_position(corner));
-            godot::UtilityFunctions::print("Corner pos x: " + String::num(camera->unproject_position(corner).x) + "y: " + String::num(camera->unproject_position(corner).x));
-        }
-
-        // Find min and max of screen-space corners to create bounding rectangle
-        float min_x = projected_corners[0].x;
-        float max_x = projected_corners[0].x;
-        float min_y = projected_corners[0].y;
-        float max_y = projected_corners[0].y;
-
-        for (const auto &corner : projected_corners)
-        {
-            min_x = std::min(min_x, corner.x);
-            max_x = std::max(max_x, corner.x);
-            min_y = std::min(min_y, corner.y);
-            max_y = std::max(max_y, corner.y);
+            godot::UtilityFunctions::print("Too small on viewport to process or outside it");
+            continue;
         }
 
         // Get centers in pixels and width and height
-        float x = min_x + (max_x - min_x) / 2;
-        float y = min_y + (max_y - min_y) / 2;
-        float width = max_x - min_x;
-        float height = max_y - min_y;
+        float x = cone_area.get_center().x;
+        float y = cone_area.get_center().y;
+        float width = cone_area.get_size().x;
+        float height = cone_area.get_size().y;
 
-        // Check if Cone is in viewport and is big enough (min dim > 20 pix)
-        if (std::min(x, y) > 0 && max_x <= get_resolution().x && max_y <= get_resolution().y && std::min(width, height) > 8)
-        {
+        // Viewport
+        //  Check if Cone is in viewport and is big enough
 
-            // Decide type
-            Dictionary type_to_class_id;
-            type_to_class_id["blue"] = 0;
-            type_to_class_id["yellow"] = 1;
-            type_to_class_id["orange"] = 2;
+        // Decide type
+        Dictionary type_to_class_id;
+        type_to_class_id["blue"] = 0;
+        type_to_class_id["yellow"] = 1;
+        type_to_class_id["orange"] = 2;
 
-            godot::UtilityFunctions::print("Type is: " + String(node_3d->get_meta("type")));
-            // <class_id> <x_center> <y_center> <width> <height>
-            yolo_annotations += vformat("%d %f %f %f %f\n",
-                                        type_to_class_id[node_3d->get_meta("type")].operator int(),
-                                        x / get_resolution().x,
-                                        y / get_resolution().y,
-                                        width / get_resolution().x,
-                                        height / get_resolution().y);
-        }
+        godot::UtilityFunctions::print("Type is: " + String(node_3d->get_meta("type")));
+        // <class_id> <x_center> <y_center> <width> <height>
+        yolo_annotations += vformat("%d %f %f %f %f\n",
+                                    type_to_class_id[node_3d->get_meta("type")].operator int(),
+                                    x / get_resolution().x,
+                                    y / get_resolution().y,
+                                    width / get_resolution().x,
+                                    height / get_resolution().y);
     }
     godot::UtilityFunctions::print(yolo_annotations);
     // Store on file with pic
@@ -301,14 +265,14 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
     dir->dir_exists(datasetPath + "/images") ? OK : dir->make_dir_recursive(datasetPath + "/images");
     dir->dir_exists(datasetPath + "/labels") ? OK : dir->make_dir_recursive(datasetPath + "/labels");
 
-    // Get time for name
-    String time = Time::get_singleton()->get_datetime_string_from_system();
+    // Get UUID for file
+    String filename = generate_uuid(); // Generate unique name for file
     // Pic
     Ref<Image> img = viewport->get_texture()->get_image();
-    img->save_png(datasetPath + "/images/" + time + ".png");
+    img->save_png(datasetPath + "/images/" + filename + ".png");
 
     // Anotations
-    Ref<FileAccess> file = FileAccess::open(datasetPath + "/labels/" + time + ".txt", FileAccess::WRITE);
+    Ref<FileAccess> file = FileAccess::open(datasetPath + "/labels/" + filename + ".txt", FileAccess::WRITE);
     if (file.is_valid())
     {
         file->store_string(yolo_annotations);
@@ -332,14 +296,22 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         if (!node_3d)
         {
             godot::UtilityFunctions::print("Not node3D");
-
             continue;
         }
         // Check if the object is behind the camera
         if (!camera->is_position_in_frustum(node_3d->get_global_transform().origin))
         {
             godot::UtilityFunctions::print("Out of frustum");
+            continue;
+        }
 
+        //Test if its inside it and big enough
+        Rect2 cone_area = getScreenSize(node_3d);
+        Rect2 frame_area = Rect2(Vector2(0, 0), get_resolution()); // Frame rectangle
+
+        if (frame_area.encloses(cone_area) && cone_area.get_area() < 40) // Area menor que 40 pixeles cuadrados o fuera de ella
+        {
+            godot::UtilityFunctions::print("Too small on viewport to process or outside it");
             continue;
         }
 
@@ -369,8 +341,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         {
             // Create a child Node3D for each point and assign it a name
             Node3D *point_node = memnew(Node3D);
-            point_node->set_name("p" + String::num_int64(i + 1)); // Names: p1, p2, ..., p7
-
+            point_node->set_name(String::num_int64(i + 1)); // Names: 1,2,3,4,5,6,7
             // Set the position of the point node
             point_node->set_position(points[i]);
 
@@ -407,6 +378,38 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
 
         // Set the rotation around the Y-axis using degrees
         keypoints->set_rotation_degrees(Vector3(0, angle * 180 / Math_PI, 0));
+
+        // Setup the positions file
+        String points_str;
+        // Project each point to screen space
+        int n = keypoints->get_child_count(); // Get number of points
+
+        for (int i = 0; i < n; i++)
+        {
+            Node3D *point = Object::cast_to<Node3D>(keypoints->get_child(i));                                                                             // get the 3d nodes
+            Vector2 p_coords = camera->unproject_position(point->get_global_position());                                                                  // Unproject the points global position to camera
+            points_str += vformat("%s,%.2f,%.2f\n", point->get_name(), p_coords.x - cone_area.get_position().x, p_coords.y - cone_area.get_position().y); // Write point to string substracting the area origin
+        }
+        // Crop viewport and store image + keycoords
+
+        // Ensure dirs
+        Ref<DirAccess> dir = DirAccess::open("");
+        dir->dir_exists(datasetPath + "/images") ? OK : dir->make_dir_recursive(datasetPath + "/images");
+        dir->dir_exists(datasetPath + "/labels") ? OK : dir->make_dir_recursive(datasetPath + "/labels");
+        // Get UUID for file
+        String filename = generate_uuid(); // Generate unique name for file
+        Ref<Image> cone = viewport->get_texture()->get_image()->get_region(cone_area);
+        cone->save_png(datasetPath + "/images/" + filename + ".png");
+        // Save annotations
+        Ref<FileAccess> file = FileAccess::open(datasetPath + "/labels/" + filename + ".csv", FileAccess::WRITE);
+        if (file.is_valid())
+        {
+            file->store_string(points_str);
+            file->close();
+            godot::UtilityFunctions::print("KEYPOINTSS WRITEN");
+        }
+        // Finished this cone, delete keypoints
+        keypoints->queue_free();
     }
 }
 
@@ -434,6 +437,75 @@ MeshInstance3D *MirenaCam::find_mesh_in_node(Node3D *node)
     }
 
     return nullptr; // Return nullptr if no MeshInstance3D is found
+}
+
+//------------------------------------------[Dataset Aux]------------------------------------------------//
+
+// Returns a rect with the viewport size of a given node3d containing a mesh
+Rect2 MirenaCam::getScreenSize(Node3D *node_3d)
+{
+    // Get Bounding box  (Origin + Size)
+    // Mesh object
+    MeshInstance3D *mesh = find_mesh_in_node(node_3d);
+    // Get AABB in global space using the mesh transform
+    Transform3D mesh_transform = mesh->get_global_transform();
+    AABB mesh_aabb = mesh_transform.xform(mesh->get_aabb());
+
+    // Get the corners of the AABB
+    Vector3 position = mesh_aabb.position; // Get position in global space
+    Vector3 size = mesh_aabb.size;
+    Vector3 corners[8] = {// Cube
+                          mesh_aabb.position,
+                          mesh_aabb.position + Vector3(size.x, 0, 0),
+                          mesh_aabb.position + Vector3(0, size.y, 0),
+                          mesh_aabb.position + Vector3(size.x, size.y, 0),
+                          mesh_aabb.position + Vector3(0, 0, size.z),
+                          mesh_aabb.position + Vector3(size.x, 0, size.z),
+                          mesh_aabb.position + Vector3(0, size.y, size.z),
+                          mesh_aabb.position + size};
+
+    // Project each corner to screen space
+    std::vector<Vector2> projected_corners;
+    for (const auto &corner : corners)
+    {
+        projected_corners.push_back(camera->unproject_position(corner));
+        godot::UtilityFunctions::print("Corner pos x: " + String::num(camera->unproject_position(corner).x) + "y: " + String::num(camera->unproject_position(corner).x));
+    }
+
+    // Find min and max of screen-space corners to create bounding rectangle
+    float min_x = projected_corners[0].x;
+    float max_x = projected_corners[0].x;
+    float min_y = projected_corners[0].y;
+    float max_y = projected_corners[0].y;
+
+    for (const auto &corner : projected_corners)
+    {
+        min_x = std::min(min_x, corner.x);
+        max_x = std::max(max_x, corner.x);
+        min_y = std::min(min_y, corner.y);
+        max_y = std::max(max_y, corner.y);
+    }
+
+    // Return a Rect
+    return Rect2(min_x, min_y, max_x - min_x, max_y - min_y);
+}
+
+String MirenaCam::generate_uuid()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint32_t> dis(0, 15);
+    std::stringstream uuid;
+    const char *hex = "0123456789abcdef";
+
+    for (int i = 0; i < 32; i++)
+    {
+        if (i == 8 || i == 12 || i == 16 || i == 20)
+            uuid << "-";
+        uuid << hex[dis(gen)];
+    }
+
+    return String(uuid.str().c_str());
 }
 
 //-------------------------------------------------------------[Getters and setters]----------------------------------------------------------------------//

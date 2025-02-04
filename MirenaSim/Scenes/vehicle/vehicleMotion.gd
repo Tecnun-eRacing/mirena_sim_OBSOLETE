@@ -25,7 +25,10 @@ func _process(delta):
 			_:
 				pass
 
-	if Input.is_action_just_pressed("dump_camera") or Input.is_joy_button_pressed(0, 0):
+	if Input.is_action_just_pressed("dump_yolo") or Input.is_joy_button_pressed(0, 0):
+		$MirenaCar/MirenaCam.dump_group_bbox_to_yolo("Cones")
+		
+	if Input.is_action_just_pressed("dump_keypoints") or Input.is_joy_button_pressed(0, 0):
 		$MirenaCar/MirenaCam.dump_group_keypoints("Cones")
 		
 	match drive_mode:

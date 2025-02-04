@@ -5,7 +5,7 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
 #include <godot_cpp/classes/sphere_mesh.hpp>
-#include <godot_cpp/classes/standard_material3d.hpp>  // For sphere color
+#include <godot_cpp/classes/standard_material3d.hpp> // For sphere color
 #include <godot_cpp/classes/remote_transform3d.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
@@ -24,6 +24,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <vector>
+#include <random>
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
@@ -55,7 +56,7 @@ namespace godot
 		// Calibration and yolo training
 		MeshInstance3D *find_mesh_in_node(Node3D *node);
 		String datasetPath; // Path to store generated output
-		bool yolo_trigger;//Acts as trigger function
+		bool yolo_trigger;	// Acts as trigger function
 
 		// Camera settings
 		float fov;
@@ -92,10 +93,14 @@ namespace godot
 		Vector3 get_camera_rotation() const;
 
 		// Training data generation
+		Rect2 getScreenSize(Node3D *node_3d);
 		void dump_group_bbox_to_yolo(const StringName &group_name);
 		void dump_group_keypoints(const StringName &group_name);
 		void set_dataset_path(String path);
 		String get_dataset_path(void);
+
+		// Utils
+		String generate_uuid();
 
 		// Camera settings methods
 		void set_fov(float p_fov);
