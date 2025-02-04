@@ -16,6 +16,8 @@ void MirenaCam::_bind_methods()
 
     // Yolo dumper function
     ClassDB::bind_method(D_METHOD("dump_group_bbox_to_yolo", "groupname"), &MirenaCam::dump_group_bbox_to_yolo);
+    ClassDB::bind_method(D_METHOD("dump_group_keypoints", "groupname"), &MirenaCam::dump_group_keypoints);
+
     ClassDB::bind_method(D_METHOD("set_dataset_path", "path"), &MirenaCam::set_dataset_path);
     ClassDB::bind_method(D_METHOD("get_dataset_path"), &MirenaCam::get_dataset_path);
 
@@ -312,6 +314,99 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
         file->store_string(yolo_annotations);
         file->close();
         godot::UtilityFunctions::print("ANOTATIONS WRITEN");
+    }
+}
+
+void MirenaCam::dump_group_keypoints(const StringName &group_name)
+{
+    // Get all group members (From the cones group for example)
+    TypedArray<Node> group_nodes = get_tree()->get_current_scene()->get_tree()->get_nodes_in_group(group_name);
+
+    godot::UtilityFunctions::print("Nodes found " + String::num(group_nodes.size()));
+    // Iterate through each of the cones-> Generate the keypoints facing camera -> Project them and crop the viewport to that cone
+    for (int i = 0; i < group_nodes.size(); i++)
+    {
+        godot::UtilityFunctions::print("Node: " + String::num(i));
+        // Cast to Node3D
+        Node3D *node_3d = Object::cast_to<Node3D>(group_nodes[i]);
+        if (!node_3d)
+        {
+            godot::UtilityFunctions::print("Not node3D");
+
+            continue;
+        }
+        // Check if the object is behind the camera
+        if (!camera->is_position_in_frustum(node_3d->get_global_transform().origin))
+        {
+            godot::UtilityFunctions::print("Out of frustum");
+
+            continue;
+        }
+
+        // Get Bounding box  (Origin + Size)
+        // Mesh object
+        MeshInstance3D *mesh = find_mesh_in_node(node_3d);
+        // Get AABB in global space using the mesh transform
+        AABB mesh_aabb = mesh->get_aabb();
+
+        // Get AABB origin
+        Vector3 bottomCenter = mesh_aabb.get_position() + Vector3(mesh_aabb.get_size().x / 2.0, 0, mesh_aabb.get_size().z / 2.0); // Get mesh bottom center in global space
+        // Generate Axis aligned keypoints
+        std::vector<Vector3> points = {
+            bottomCenter + Vector3(-0.075, 0.035, 0),
+            bottomCenter + Vector3(0.075, 0.035, 0),
+            bottomCenter + Vector3(-0.055, 0.140, 0),
+            bottomCenter + Vector3(0.055, 0.140, 0),
+            bottomCenter + Vector3(-0.035, 0.240, 0),
+            bottomCenter + Vector3(0.035, 0.240, 0),
+            bottomCenter + Vector3(0.000, 0.325, 0)};
+
+        // Create a keypoint node3d container
+        Node3D *keypoints = memnew(Node3D);
+        node_3d->add_child(keypoints);
+
+        for (int i = 0; i < points.size(); ++i)
+        {
+            // Create a child Node3D for each point and assign it a name
+            Node3D *point_node = memnew(Node3D);
+            point_node->set_name("p" + String::num_int64(i + 1)); // Names: p1, p2, ..., p7
+
+            // Set the position of the point node
+            point_node->set_position(points[i]);
+
+            // Add the point node as a child of the parent node
+            keypoints->add_child(point_node);
+
+            // Create a sphere for visualization
+            MeshInstance3D *sphere = memnew(MeshInstance3D);
+            Ref<SphereMesh> sphere_mesh = memnew(SphereMesh);
+
+            sphere_mesh->set_radius(0.02); // Small sphere for visualization
+            sphere_mesh->set_height(0.04);
+
+            Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
+            material->set_albedo(Color(1.0, 0.0, 0.0)); // Red color
+            sphere->set_material_override(material);
+            sphere->set_mesh(sphere_mesh);
+
+            // Add the sphere as a child of the point node
+            point_node->add_child(sphere);
+        }
+        // Rotate the cone to face  camera at this instant
+        Vector3 camera_position = camera->get_global_position(); // Get camera position
+
+        // Calculate the direction vector to the camera, ignoring the Y-axis (yaw only)
+        Vector3 direction_to_camera = camera_position - keypoints->get_global_position();
+        direction_to_camera.y = 0; // Ignore the Y component to focus on yaw rotation
+
+        // Normalize the direction vector (for accurate angle calculation)
+        direction_to_camera = direction_to_camera.normalized();
+
+        // Calculate the angle to rotate (in radians) around the Y-axis
+        float angle = atan2(direction_to_camera.x, direction_to_camera.z);
+
+        // Set the rotation around the Y-axis using degrees
+        keypoints->set_rotation_degrees(Vector3(0, angle * 180 / Math_PI, 0));
     }
 }
 

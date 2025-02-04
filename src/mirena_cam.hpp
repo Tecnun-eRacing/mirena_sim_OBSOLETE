@@ -4,6 +4,8 @@
 #include <godot_cpp/classes/camera3d.hpp>
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/classes/mesh_instance3d.hpp>
+#include <godot_cpp/classes/sphere_mesh.hpp>
+#include <godot_cpp/classes/standard_material3d.hpp>  // For sphere color
 #include <godot_cpp/classes/remote_transform3d.hpp>
 #include <godot_cpp/classes/image.hpp>
 #include <godot_cpp/classes/sub_viewport.hpp>
@@ -22,6 +24,7 @@
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/classes/time.hpp>
 #include <vector>
+
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
@@ -90,6 +93,7 @@ namespace godot
 
 		// Training data generation
 		void dump_group_bbox_to_yolo(const StringName &group_name);
+		void dump_group_keypoints(const StringName &group_name);
 		void set_dataset_path(String path);
 		String get_dataset_path(void);
 
