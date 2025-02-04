@@ -228,7 +228,7 @@ void MirenaCam::dump_group_bbox_to_yolo(const StringName &group_name)
         Rect2 cone_area = getScreenSize(node_3d);
         Rect2 frame_area = Rect2(Vector2(0, 0), get_resolution()); // Frame rectangle
 
-        if (frame_area.encloses(cone_area) && cone_area.get_area() < 40) // Area mayor que 40 pixeles cuadrados o fuera de ella
+        if (!frame_area.encloses(cone_area) || cone_area.get_area() < AREA_THRESHOLD) // Area mayor que 40 pixeles cuadrados o fuera de ella
         {
             godot::UtilityFunctions::print("Too small on viewport to process or outside it");
             continue;
@@ -309,7 +309,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         Rect2 cone_area = getScreenSize(node_3d);
         Rect2 frame_area = Rect2(Vector2(0, 0), get_resolution()); // Frame rectangle
 
-        if (frame_area.encloses(cone_area) && cone_area.get_area() < 40) // Area menor que 40 pixeles cuadrados o fuera de ella
+        if (!frame_area.encloses(cone_area) || cone_area.get_area() < AREA_THRESHOLD) // Area menor que 40 pixeles cuadrados o fuera de ella
         {
             godot::UtilityFunctions::print("Too small on viewport to process or outside it");
             continue;
