@@ -42,6 +42,13 @@ mass = 200.0
 [node name="Track" type="Node3D" parent="."]
 script = ExtResource("2_bp587")
 
+[node name="FileDialog" type="FileDialog" parent="Track"]
+title = "Open a File"
+size = Vector2i(720, 480)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+
 [node name="Ground" type="StaticBody3D" parent="."]
 physics_material_override = SubResource("PhysicsMaterial_ok5qf")
 
@@ -67,13 +74,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20.3559, 0)
 light_energy = 4.0
 omni_range = 100.0
 omni_attenuation = 0.0
-
-[node name="FileDialog" type="FileDialog" parent="."]
-title = "Open a File"
-size = Vector2i(720, 480)
-ok_button_text = "Open"
-file_mode = 0
-access = 2
 
 [node name="RosTime" type="RosTime" parent="."]
 use_sim_time = true
@@ -102,4 +102,4 @@ offset_right = 116.0
 offset_bottom = 80.0
 text = "Fallen Cones:"
 
-[connection signal="file_selected" from="FileDialog" to="." method="_on_file_selected"]
+[connection signal="file_selected" from="Track/FileDialog" to="Track" method="_on_file_dialog_file_selected"]

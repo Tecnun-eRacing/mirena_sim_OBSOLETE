@@ -10,8 +10,7 @@ var drive_mode = ControlMode.ROS
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
-
+	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -30,6 +29,8 @@ func _process(delta):
 		
 	if Input.is_action_just_pressed("dump_keypoints") or Input.is_joy_button_pressed(0, 0):
 		$MirenaCar/MirenaCam.dump_group_keypoints("Cones")
+		follow_path(get_node("/root/SimEnviroment/Track").path,self)
+
 		
 	match drive_mode:
 				ControlMode.ROS:
@@ -53,9 +54,29 @@ func manual_drive():
 		brake_input = 1
 	else:
 		brake_input = 0
-
-		
 	# Move Car
 	steering = MAX_STEER * steering_input
 	engine_force = ENGINE_F * accelerator_input;
 	brake = BRAKE_F * brake_input	
+
+func follow_path(path: Path3D, car: Node3D, speed: float = 5.0) -> void:
+	if not path or not car:
+		push_warning("Missing path or car reference!")
+		return
+		
+	# Create local PathFollow3D node
+	var path_follow = PathFollow3D.new()
+	path.add_child(path_follow)
+	path_follow.loop = true
+	self.freeze = true # Congelamos las fisicas
+	while not is_equal_approx(path_follow.progress_ratio, 1.0):
+		path_follow.progress -= speed * get_process_delta_time()
+		path_follow.progress_ratio = clamp(path_follow.progress_ratio, 0.0, 1.0)
+
+		car.global_position = path_follow.global_position
+		car.global_transform = path_follow.global_transform
+		await get_tree().process_frame
+	self.freeze = false # DesCongelamos las fisicas
+	print("Finished Touring the Path")
+	path_follow.queue_free()
+	

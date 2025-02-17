@@ -324,6 +324,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         // Get AABB origin
         Vector3 bottomCenter = mesh_aabb.get_position() + Vector3(mesh_aabb.get_size().x / 2.0, 0, mesh_aabb.get_size().z / 2.0); // Get mesh bottom center in global space
         // Generate Axis aligned keypoints
+        //Here is where actual order is decided
         std::vector<Vector3> points = {
             bottomCenter + Vector3(-0.075, 0.035, 0),
             bottomCenter + Vector3(0.075, 0.035, 0),
