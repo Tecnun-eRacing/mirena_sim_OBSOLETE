@@ -67,6 +67,7 @@ func genGates(path : Curve3D, spacing : float = 4, width : float = 3):
 		cone.set_meta("type","blue")
 		cone.set_type(cone.color.BLUE)
 		cone.translate(pos + normal * (width / 2))
+		cone.rotate_y(randf_range(0,PI/4))
 		cone.add_to_group("Cones") # Add to group for easy reference
 		add_child(cone)
 
@@ -76,6 +77,7 @@ func genGates(path : Curve3D, spacing : float = 4, width : float = 3):
 		cone.set_meta("type","yellow")
 		cone.set_type(cone.color.YELLOW)
 		cone.translate(pos - normal * (width / 2))
+		cone.rotate_y(randf_range(0,PI/4))
 		cone.add_to_group("Cones") # Add to group for easy reference
 		add_child(cone)
 

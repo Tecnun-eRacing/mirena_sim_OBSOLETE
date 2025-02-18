@@ -85,7 +85,7 @@ void MirenaLidar::scan()
     PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world->get_space());
 
     auto cloud = std::make_unique<sensor_msgs::msg::PointCloud2>();
-    cloud->header.stamp = current_time;
+    cloud->header.stamp = ros_node->now();
     cloud->header.frame_id = ros_node->get_name();
     cloud->height = vertical_resolution;
     cloud->width = horizontal_resolution;

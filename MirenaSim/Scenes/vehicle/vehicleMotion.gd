@@ -59,7 +59,7 @@ func manual_drive():
 	engine_force = ENGINE_F * accelerator_input;
 	brake = BRAKE_F * brake_input	
 
-func follow_path(path: Path3D, car: Node3D, speed: float = 5.0) -> void:
+func follow_path(path: Path3D, car: Node3D, speed: float = 10) -> void:
 	if not path or not car:
 		push_warning("Missing path or car reference!")
 		return
@@ -69,10 +69,11 @@ func follow_path(path: Path3D, car: Node3D, speed: float = 5.0) -> void:
 	path.add_child(path_follow)
 	path_follow.loop = true
 	self.freeze = true # Congelamos las fisicas
+	
 	while not is_equal_approx(path_follow.progress_ratio, 1.0):
 		path_follow.progress -= speed * get_process_delta_time()
 		path_follow.progress_ratio = clamp(path_follow.progress_ratio, 0.0, 1.0)
-
+		
 		car.global_position = path_follow.global_position
 		car.global_transform = path_follow.global_transform
 		await get_tree().process_frame
