@@ -15,7 +15,7 @@ find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(mirena_msg REQUIRED) # For car controls message
+find_package(mirena_common REQUIRED) # For car controls message
 
 find_package(OpenMP REQUIRED)
 
@@ -54,7 +54,7 @@ ament_target_dependencies(mirena_ros
     std_msgs
     sensor_msgs
     geometry_msgs
-    mirena_msg
+    mirena_common
 )
 
 # Link Godot GDExtension, Godot CPP bindings, ROS 2 libraries

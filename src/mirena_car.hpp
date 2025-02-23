@@ -6,7 +6,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "mirena_msg/msg/car_controls.hpp"
+#include "mirena_common/msg/car_controls.hpp"
 
 #include "ros_node3d.hpp"
 
@@ -18,7 +18,7 @@ namespace godot
 		GDCLASS(MirenaCar, RosNode3D)
 	private:
 		// ROS subscriber and callback
-		rclcpp::Subscription<mirena_msg::msg::CarControls>::SharedPtr rosSub;
+		rclcpp::Subscription<mirena_common::msg::CarControls>::SharedPtr rosSub;
 		// Internal Car Inputs
 		uint8_t gas;
 		uint8_t brake;
@@ -41,7 +41,7 @@ namespace godot
 		// Godot runtime
 		void _ros_ready() override;
 		// ROS
-		void topic_callback(const mirena_msg::msg::CarControls::SharedPtr msg);
+		void topic_callback(const mirena_common::msg::CarControls::SharedPtr msg);
 	};
 
 }

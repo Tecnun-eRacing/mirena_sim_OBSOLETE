@@ -36,7 +36,7 @@ void MirenaCar::_ros_ready()
 	gas = 0;
 	brake = 0;
 	steer_angle = 0;
-	rosSub = ros_node->create_subscription<mirena_msg::msg::CarControls>(
+	rosSub = ros_node->create_subscription<mirena_common::msg::CarControls>(
 		"car_control", 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
 }
 
@@ -67,7 +67,7 @@ float MirenaCar::get_steer_angle()
 }
 
 //------------------------------------------------------------ ROS ---------------------------------------------------------//
-void MirenaCar::topic_callback(const mirena_msg::msg::CarControls::SharedPtr msg)
+void MirenaCar::topic_callback(const mirena_common::msg::CarControls::SharedPtr msg)
 {
 	gas = msg->gas;
 	brake = msg->brake;
