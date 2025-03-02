@@ -13,6 +13,7 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
 #include "geometry_msgs/msg/accel_stamped.hpp"
+#include "sensor_msgs/msg/imu.hpp"
 
 namespace godot
 {
@@ -24,8 +25,8 @@ namespace godot
     private:
         // Publishers
         rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr posePub;
-        rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr speedPub;
-        rclcpp::Publisher<geometry_msgs::msg::AccelStamped>::SharedPtr accelPub;
+        rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imuPub;
+
 
         // IMU Linear Calculation Vectors
         Vector3 l_pos;

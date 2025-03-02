@@ -21,8 +21,7 @@ void MirenaImu::_ros_ready()
 {
     // Create Publishers
     posePub = ros_node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pos", 10);
-    speedPub = ros_node->create_publisher<geometry_msgs::msg::TwistStamped>("car_speed", 10);
-    accelPub = ros_node->create_publisher<geometry_msgs::msg::AccelStamped>("car_accel", 10);
+    imuPub = ros_node->create_publisher<sensor_msgs::msg::Imu>("car_imu", 10);
 }
 
 void MirenaImu::_ros_process(double delta)
@@ -50,8 +49,8 @@ void MirenaImu::_ros_process(double delta)
 
     // Create msgs to send
     auto p_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
-    auto p_speed = std::make_unique<geometry_msgs::msg::TwistStamped>();
-    auto p_accel = std::make_unique<geometry_msgs::msg::AccelStamped>();
+    auto p_imu = std::make_unique<sensor_msgs::msg::Imu>();
+
 
     // Populate the frames
     // Pose
@@ -65,28 +64,32 @@ void MirenaImu::_ros_process(double delta)
     p_pose->pose.orientation.z = aq_pos.z;
     p_pose->pose.orientation.w = aq_pos.w;
 
-    // Speed
-    p_speed->header.stamp = ros_node->now();
-    p_speed->header.frame_id = ros_node->get_name();
-    p_speed->twist.linear.x = l_speed.x;
-    p_speed->twist.linear.y = l_speed.y;
-    p_speed->twist.linear.z = l_speed.z;
-    p_speed->twist.angular.x = a_speed.x;
-    p_speed->twist.angular.y = a_speed.y;
-    p_speed->twist.angular.z = a_speed.z;
+    //IMU Data
+    p_imu->header.stamp = ros_node->now();
+    p_imu->header.frame_id = ros_node->get_name();
 
-    // Accel
-    p_accel->header.stamp = ros_node->now();
-    p_accel->header.frame_id = ros_node->get_name();
-    p_accel->accel.linear.x = l_accel.x;
-    p_accel->accel.linear.y = l_accel.y;
-    p_accel->accel.linear.z = l_accel.z;
-    p_accel->accel.angular.x = a_accel.x;
-    p_accel->accel.angular.y = a_accel.y;
-    p_accel->accel.angular.z = a_accel.z;
+    //Orientation
+    p_imu->orientation.x = aq_pos.x;
+    p_imu->orientation.y = aq_pos.y;
+    p_imu->orientation.z = aq_pos.z;
+    p_imu->orientation.w = aq_pos.w;
+    p_imu->orientation_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for orientation
+
+    //Angular velocity
+    p_imu->angular_velocity.x = a_speed.x;
+    p_imu->angular_velocity.y = a_speed.y;
+    p_imu->angular_velocity.z = a_speed.z;
+    p_imu->angular_velocity_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for angular velocity
+
+
+    // Linear Acceleration
+    p_imu->linear_acceleration.x = l_accel.x;
+    p_imu->linear_acceleration.y = l_accel.y;
+    p_imu->linear_acceleration.z = l_accel.z;
+    p_imu->linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for linear acceleration
 
     // Publish all data
     posePub->publish(std::move(p_pose));
-    speedPub->publish(std::move(p_speed));
-    accelPub->publish(std::move(p_accel));
+    imuPub->publish(std::move(p_imu));
+
 }
