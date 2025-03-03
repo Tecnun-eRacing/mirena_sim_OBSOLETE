@@ -1,6 +1,6 @@
 #include "mirena_imu.hpp"
 #include <godot_cpp/core/class_db.hpp>
-
+#include "cframe_helpers.hpp"
 using namespace godot;
 
 void MirenaImu::_bind_methods()
@@ -20,7 +20,7 @@ MirenaImu::~MirenaImu()
 void MirenaImu::_ros_ready()
 {
     // Create Publishers
-    posePub = ros_node->create_publisher<geometry_msgs::msg::PoseStamped>("car_pos", 10);
+    posePub = ros_node->create_publisher<geometry_msgs::msg::PoseStamped>("car_real_pose", 10);
     imuPub = ros_node->create_publisher<sensor_msgs::msg::Imu>("car_imu", 10);
 }
 
@@ -51,41 +51,47 @@ void MirenaImu::_ros_process(double delta)
     auto p_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
     auto p_imu = std::make_unique<sensor_msgs::msg::Imu>();
 
+    //Convert coordinate frames
+    Eigen::Quaterniond orientation = godot_to_ros2(aq_pos);
+    Eigen::Vector3d position = godot_to_ros2(l_pos);
+    Eigen::Vector3d angular_vel = godot_to_ros2(a_speed);
+    Eigen::Vector3d linear_acc = godot_to_ros2(l_accel);
+
 
     // Populate the frames
     // Pose
     p_pose->header.stamp = ros_node->now();
     p_pose->header.frame_id = "world";
-    p_pose->pose.position.x = l_pos.x;
-    p_pose->pose.position.y = l_pos.y;
-    p_pose->pose.position.z = l_pos.z;
-    p_pose->pose.orientation.x = aq_pos.x;
-    p_pose->pose.orientation.y = aq_pos.y;
-    p_pose->pose.orientation.z = aq_pos.z;
-    p_pose->pose.orientation.w = aq_pos.w;
+    p_pose->pose.position.x = position.x();
+    p_pose->pose.position.y = position.y();
+    p_pose->pose.position.z = position.z();
+    p_pose->pose.orientation.x = orientation.x();
+    p_pose->pose.orientation.y = orientation.y();
+    p_pose->pose.orientation.z = orientation.z();
+    p_pose->pose.orientation.w = orientation.w();
 
     //IMU Data
     p_imu->header.stamp = ros_node->now();
     p_imu->header.frame_id = ros_node->get_name();
 
     //Orientation
-    p_imu->orientation.x = aq_pos.x;
-    p_imu->orientation.y = aq_pos.y;
-    p_imu->orientation.z = aq_pos.z;
-    p_imu->orientation.w = aq_pos.w;
+    p_imu->orientation.x = orientation.x();
+    p_imu->orientation.y = orientation.y();
+    p_imu->orientation.z = orientation.z();
+    p_imu->orientation.w = orientation.w();
     p_imu->orientation_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for orientation
 
     //Angular velocity
-    p_imu->angular_velocity.x = a_speed.x;
-    p_imu->angular_velocity.y = a_speed.y;
-    p_imu->angular_velocity.z = a_speed.z;
+    p_imu->angular_velocity.x = angular_vel.x();
+    p_imu->angular_velocity.y = angular_vel.y();
+    p_imu->angular_velocity.z = angular_vel.z();
     p_imu->angular_velocity_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for angular velocity
 
 
     // Linear Acceleration
-    p_imu->linear_acceleration.x = l_accel.x;
-    p_imu->linear_acceleration.y = l_accel.y;
-    p_imu->linear_acceleration.z = l_accel.z;
+    p_imu->linear_acceleration.x = linear_acc.x();
+    p_imu->linear_acceleration.y = linear_acc.y();
+    p_imu->linear_acceleration.z = linear_acc.z();
     p_imu->linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for linear acceleration
 
     // Publish all data

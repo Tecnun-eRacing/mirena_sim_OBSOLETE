@@ -1,6 +1,7 @@
 // ros_node_3d.cpp
 #include "ros_node3d.hpp"
 #include <godot_cpp/core/class_db.hpp>
+#include "cframe_helpers.hpp"
 
 namespace godot
 {
@@ -77,41 +78,44 @@ namespace godot
         if (!tf_broadcaster)
             return;
 
-        geometry_msgs::msg::TransformStamped transform;
+        geometry_msgs::msg::TransformStamped tf;
 
-        // Get global transform of object
-        Transform3D nodeTransform = get_global_transform();
+        // Get godot global trasform
+        Transform3D g_tf = get_global_transform();
 
         RosNode3D *parent_ros_node = find_nearest_ros_parent();
         if (parent_ros_node) // if parent ros2 node get corresponding relative transform between them
         {
             std::string parent_name(reinterpret_cast<const char *>(parent_ros_node->get_name().to_utf8_buffer().ptr()), parent_ros_node->get_name().to_utf8_buffer().size());
-            transform.header.frame_id = parent_name;
+            tf.header.frame_id = parent_name;
             // Get global transform
-            nodeTransform = parent_ros_node->get_global_transform().affine_inverse() * nodeTransform; // Compute relative transform
+            g_tf = parent_ros_node->get_global_transform().affine_inverse() * g_tf; // Compute relative transform
         }
         else
         {
-            transform.header.frame_id = "world";
+            tf.header.frame_id = "world";
         }
+        //Esto hay que hacerlo asi XD putas strings
         std::string child_name(reinterpret_cast<const char *>(get_name().to_utf8_buffer().ptr()), get_name().to_utf8_buffer().size());
-        transform.child_frame_id = child_name;
+        tf.child_frame_id = child_name;
+
+        //Convert from godot to ros2 transform (Change in coordinate frame)
+        Eigen::Isometry3d r_tf = godot_to_ros2(g_tf);
 
         // Set translation
-        transform.transform.translation.x = nodeTransform.origin.x;
-        transform.transform.translation.y = nodeTransform.origin.y;
-        transform.transform.translation.z = nodeTransform.origin.z;
+        tf.transform.translation.x = r_tf.translation().x();
+        tf.transform.translation.y = r_tf.translation().y();
+        tf.transform.translation.z = r_tf.translation().z();
 
         // Set rotation (as quaternion)
-        Basis rotation = nodeTransform.basis;
-        Quaternion quat = rotation.get_quaternion();
-        transform.transform.rotation.x = quat.x;
-        transform.transform.rotation.y = quat.y;
-        transform.transform.rotation.z = quat.z;
-        transform.transform.rotation.w = quat.w;
+        Eigen::Quaterniond r_quat(r_tf.rotation());
+        tf.transform.rotation.w = r_quat.w();
+        tf.transform.rotation.x = r_quat.x();
+        tf.transform.rotation.y = r_quat.y();
+        tf.transform.rotation.z = r_quat.z();
 
-        transform.header.stamp = current_time;
-        tf_broadcaster->sendTransform(transform);
+        tf.header.stamp = current_time;
+        tf_broadcaster->sendTransform(tf);
     }
 
     void RosNode3D::_bind_methods()

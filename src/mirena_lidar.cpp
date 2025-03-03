@@ -10,6 +10,7 @@
 #include <godot_cpp/classes/world3d.hpp>
 #include <cmath>
 #include <random> //For additive noise
+#include "cframe_helpers.hpp"
 
 using namespace godot;
 
@@ -161,9 +162,15 @@ void MirenaLidar::scan()
             }
 
             int index = (v * horizontal_resolution + h) * cloud->point_step;
-            memcpy(&cloud->data[index + 0], &hit_point.x, sizeof(float));
-            memcpy(&cloud->data[index + 4], &hit_point.y, sizeof(float));
-            memcpy(&cloud->data[index + 8], &hit_point.z, sizeof(float));
+            Eigen::Vector3d point = godot_to_ros2(hit_point);
+            float x = static_cast<float>(point.x());
+            float y = static_cast<float>(point.y());
+            float z = static_cast<float>(point.z());
+        
+            // Directly write to cloud->data using pointer manipulation
+            memcpy(&cloud->data[index + 0], &x, sizeof(float));
+            memcpy(&cloud->data[index + 4], &y, sizeof(float));
+            memcpy(&cloud->data[index + 8], &z, sizeof(float));
         }
     }
 

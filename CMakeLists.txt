@@ -16,7 +16,7 @@ find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(mirena_common REQUIRED) # For car controls message
-
+find_package(Eigen3 REQUIRED) # For coordinate conversions
 find_package(OpenMP REQUIRED)
 
 # Include godot-cpp module
@@ -30,6 +30,7 @@ include_directories(${tf2_ros_INCLUDE_DIRS})
 include_directories(${std_msgs_INCLUDE_DIRS})
 include_directories(${sensor_msgs_INCLUDE_DIRS})
 include_directories(${geometry_msgs_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIR})
 
 # Source files for the project (your GDExtension and ROS 2 code)
 include_directories(src)
