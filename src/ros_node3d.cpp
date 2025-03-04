@@ -101,14 +101,13 @@ namespace godot
 
         //Convert from godot to ros2 transform (Change in coordinate frame)
         Eigen::Isometry3d r_tf = godot_to_ros2(g_tf);
-
         // Set translation
         tf.transform.translation.x = r_tf.translation().x();
         tf.transform.translation.y = r_tf.translation().y();
         tf.transform.translation.z = r_tf.translation().z();
-
+    
         // Set rotation (as quaternion)
-        Eigen::Quaterniond r_quat(r_tf.rotation());
+        Eigen::Quaterniond r_quat = godot_to_ros2(g_tf.basis.get_quaternion());
         tf.transform.rotation.w = r_quat.w();
         tf.transform.rotation.x = r_quat.x();
         tf.transform.rotation.y = r_quat.y();

@@ -36,7 +36,7 @@ ambient_light_color = Color(1, 0.992157, 0.878431, 1)
 script = ExtResource("1_ux211")
 
 [node name="vehicle" parent="." instance=ExtResource("4_g1k8q")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0.2, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
 mass = 200.0
 
 [node name="Track" type="Node3D" parent="."]

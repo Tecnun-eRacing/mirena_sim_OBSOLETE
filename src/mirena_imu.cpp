@@ -5,7 +5,6 @@ using namespace godot;
 
 void MirenaImu::_bind_methods()
 {
-
 }
 
 MirenaImu::MirenaImu()
@@ -26,19 +25,12 @@ void MirenaImu::_ros_ready()
 
 void MirenaImu::_ros_process(double delta)
 {
-    // Update Linear Measures
-    l_pos = get_global_transform().origin;
-    // Speed
-    l_speed = (l_pos - l_prev_pos) / delta;
-    // Accel
-    l_accel = (l_speed - l_prev_speed) / delta;
-    // Update prevs
-    l_prev_pos = l_pos;
-    l_prev_speed = l_speed;
+
+    Transform3D global_tf = get_global_transform();
 
     // Update Angular Measures
-    a_pos = get_global_transform().basis.get_euler();
-    aq_pos = get_global_transform().basis.get_quaternion();
+    a_pos = global_tf.basis.get_euler();
+    aq_pos = global_tf.basis.get_quaternion();
     // Speed
     a_speed = (a_pos - a_prev_pos) / delta;
     // Accel
@@ -47,16 +39,26 @@ void MirenaImu::_ros_process(double delta)
     a_prev_pos = a_pos;
     a_prev_speed = a_speed;
 
+    // Update Linear Measures (In IMU frame)
+    l_pos = global_tf.origin;
+    //Process inertial data in local frame
+    // Speed (In local frame)
+    l_speed = global_tf.basis.xform_inv((l_pos - l_prev_pos) / delta);
+    // Accel
+    l_accel = (l_speed - l_prev_speed) / delta;
+    // Update prevs
+    l_prev_pos = l_pos;
+    l_prev_speed = l_speed;
+
     // Create msgs to send
     auto p_pose = std::make_unique<geometry_msgs::msg::PoseStamped>();
     auto p_imu = std::make_unique<sensor_msgs::msg::Imu>();
 
-    //Convert coordinate frames
+    // Convert coordinate frames
     Eigen::Quaterniond orientation = godot_to_ros2(aq_pos);
     Eigen::Vector3d position = godot_to_ros2(l_pos);
     Eigen::Vector3d angular_vel = godot_to_ros2(a_speed);
     Eigen::Vector3d linear_acc = godot_to_ros2(l_accel);
-
 
     // Populate the frames
     // Pose
@@ -70,23 +72,22 @@ void MirenaImu::_ros_process(double delta)
     p_pose->pose.orientation.z = orientation.z();
     p_pose->pose.orientation.w = orientation.w();
 
-    //IMU Data
+    // IMU Data
     p_imu->header.stamp = ros_node->now();
     p_imu->header.frame_id = ros_node->get_name();
 
-    //Orientation
+    // Orientation
     p_imu->orientation.x = orientation.x();
     p_imu->orientation.y = orientation.y();
     p_imu->orientation.z = orientation.z();
     p_imu->orientation.w = orientation.w();
     p_imu->orientation_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for orientation
 
-    //Angular velocity
+    // Angular velocity
     p_imu->angular_velocity.x = angular_vel.x();
     p_imu->angular_velocity.y = angular_vel.y();
     p_imu->angular_velocity.z = angular_vel.z();
     p_imu->angular_velocity_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for angular velocity
-
 
     // Linear Acceleration
     p_imu->linear_acceleration.x = linear_acc.x();
@@ -97,5 +98,4 @@ void MirenaImu::_ros_process(double delta)
     // Publish all data
     posePub->publish(std::move(p_pose));
     imuPub->publish(std::move(p_imu));
-
 }
