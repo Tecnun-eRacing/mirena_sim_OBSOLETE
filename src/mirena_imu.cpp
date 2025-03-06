@@ -72,9 +72,6 @@ void MirenaImu::_ros_process(double delta)
     p_pose->pose.orientation.z = orientation.z();
     p_pose->pose.orientation.w = orientation.w();
 
-    // IMU Data
-    p_imu->header.stamp = ros_node->now();
-    p_imu->header.frame_id = ros_node->get_name();
 
     // Orientation
     p_imu->orientation.x = orientation.x();
@@ -94,6 +91,10 @@ void MirenaImu::_ros_process(double delta)
     p_imu->linear_acceleration.y = linear_acc.y();
     p_imu->linear_acceleration.z = linear_acc.z();
     p_imu->linear_acceleration_covariance = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0}; // 3x3 covariance matrix for linear acceleration
+
+    // IMU Data
+    p_imu->header.stamp = ros_node->now();
+    p_imu->header.frame_id = ros_node->get_name();
 
     // Publish all data
     posePub->publish(std::move(p_pose));
