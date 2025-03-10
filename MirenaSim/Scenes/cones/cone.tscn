@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://bclyhf4ovdjyf"]
 
-[ext_resource type="Script" path="res://Scenes/cones/cone.gd" id="1_0u5f0"]
+[ext_resource type="Script" uid="uid://cq74fmc8nei0w" path="res://Scenes/cones/cone.gd" id="1_0u5f0"]
 [ext_resource type="ArrayMesh" uid="uid://dh5mqs7sykubf" path="res://Models/Cone/Meshes/BCone.res" id="2_ijuo8"]
 [ext_resource type="Shape3D" uid="uid://bl7w54xfjeqjn" path="res://Models/Cone/Meshes/collider.tres" id="3_f0iag"]
 

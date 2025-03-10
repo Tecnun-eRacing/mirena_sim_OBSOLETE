@@ -33,10 +33,7 @@
 
 #include "ros_node3d.hpp"
 
-
-
 #define AREA_THRESHOLD 200
-
 
 namespace godot
 {
@@ -49,19 +46,15 @@ namespace godot
 		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; // Camera Info topic
 
 		// Internal Variables
+		Vector2i resolution;
+		bool use_environment;
 		SubViewport *viewport;
 		RemoteTransform3D *camera_transform;
 		Camera3D *camera;
-		Vector2i resolution;
-		bool use_environment;
+
 		// Create ROS2 message
 		std::unique_ptr<sensor_msgs::msg::Image> frame;
 		std::unique_ptr<sensor_msgs::msg::CameraInfo> info;
-
-		// Calibration and yolo training
-		MeshInstance3D *find_mesh_in_node(Node3D *node);
-		String datasetPath; // Path to store generated output
-		bool yolo_trigger;	// Acts as trigger function
 
 		// Camera settings
 		float fov;
@@ -72,6 +65,11 @@ namespace godot
 		float h_offset;
 		float v_offset;
 		bool doppler_tracking;
+
+		// Calibration and yolo training
+		MeshInstance3D *find_mesh_in_node(Node3D *node);
+		String datasetPath; // Path to store generated output
+		bool yolo_trigger;	// Acts as trigger function
 
 	protected:
 		static void _bind_methods();

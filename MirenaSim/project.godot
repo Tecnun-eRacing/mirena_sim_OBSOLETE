@@ -12,7 +12,7 @@ config_version=5
 
 config/name="MirenaSim"
 run/main_scene="res://Scenes/sim/SimEnv.tscn"
-config/features=PackedStringArray("4.3", "Forward Plus")
+config/features=PackedStringArray("4.4", "Forward Plus")
 run/max_fps=120
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/image="res://icon.png"
@@ -64,6 +64,8 @@ dump_keypoints={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=600
+common/physics_ticks_per_second=400
 common/max_physics_steps_per_frame=100
+3d/physics_engine="Jolt Physics"
 3d/solver/solver_iterations=4
+common/physics_interpolation=true

@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.8)
 project(mirena_sim)
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options("-O3")
-endif()
+#Compiler options
+add_compile_options("-O3")
+
+
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -17,11 +18,11 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(mirena_common REQUIRED) # For car controls message
 find_package(Eigen3 REQUIRED) # For coordinate conversions
-find_package(OpenMP REQUIRED)
+find_package(OpenMP REQUIRED) # For lidar optimizations
 
 # Include godot-cpp module
+set(GODOTCPP_DISABLE_EXCEPTIONS OFF)
 add_subdirectory(godot-cpp)
-
 
 # Add paths for ROS 2 headers
 include_directories(${rclcpp_INCLUDE_DIRS})

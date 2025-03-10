@@ -338,13 +338,13 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         Node3D *keypoints = memnew(Node3D);
         node_3d->add_child(keypoints);
 
-        for (int i = 0; i < points.size(); ++i)
+        for (unsigned int j = 0; j < points.size(); ++j)
         {
             // Create a child Node3D for each point and assign it a name
             Node3D *point_node = memnew(Node3D);
-            point_node->set_name(String::num_int64(i + 1)); // Names: 1,2,3,4,5,6,7
+            point_node->set_name(String::num_int64(j + 1)); // Names: 1,2,3,4,5,6,7
             // Set the position of the point node
-            point_node->set_position(points[i]);
+            point_node->set_position(points[j]);
 
             // Add the point node as a child of the parent node
             keypoints->add_child(point_node);
@@ -385,9 +385,9 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         // Project each point to screen space
         int n = keypoints->get_child_count(); // Get number of points
 
-        for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; i++)
         {
-            Node3D *point = Object::cast_to<Node3D>(keypoints->get_child(i));                                                                             // get the 3d nodes
+            Node3D *point = Object::cast_to<Node3D>(keypoints->get_child(j));                                                                             // get the 3d nodes
             Vector2 p_coords = camera->unproject_position(point->get_global_position());                                                                  // Unproject the points global position to camera
             points_str += vformat("%s,%.2f,%.2f\n", point->get_name(), p_coords.x - cone_area.get_position().x, p_coords.y - cone_area.get_position().y); // Write point to string substracting the area origin
         }
@@ -453,7 +453,7 @@ Rect2 MirenaCam::getScreenSize(Node3D *node_3d)
     AABB mesh_aabb = mesh_transform.xform(mesh->get_aabb());
 
     // Get the corners of the AABB
-    Vector3 position = mesh_aabb.position; // Get position in global space
+    //Vector3 position = mesh_aabb.position; // Get position in global space
     Vector3 size = mesh_aabb.size;
     Vector3 corners[8] = {// Cube
                           mesh_aabb.position,
