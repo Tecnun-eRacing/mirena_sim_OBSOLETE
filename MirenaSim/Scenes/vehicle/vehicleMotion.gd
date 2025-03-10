@@ -39,6 +39,8 @@ func _process(delta):
 					manual_drive()
 				_:
 					pass
+					
+	$MirenaCar.set_wheels_speed($RL_WHEEL.get_rpm()*PI/30,$RR_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30)
 		
 		
 func ros_drive():

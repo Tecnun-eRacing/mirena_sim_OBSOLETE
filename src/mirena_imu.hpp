@@ -1,5 +1,4 @@
-#ifndef MIRENAIMU_H
-#define MIRENAIMU_H
+#pragma once
 
 // GODOT
 #include <godot_cpp/classes/node3d.hpp>
@@ -52,13 +51,6 @@ namespace godot
         // Godot runtime
         void _ros_ready() override;
         void _ros_process(double delta) override;
-
-        // Getters and Setters
-        void set_refresh_rate(double r_rate);
-        double get_refresh_rate() const;
-
     };
 
 }
-
-#endif // MIRENA_IMU

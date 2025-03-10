@@ -42,6 +42,7 @@ set(SOURCES
     src/mirena_cam.cpp
     src/mirena_lidar.cpp
     src/mirena_imu.cpp
+    src/mirena_gps.cpp
     src/register_types.cpp
 )
 

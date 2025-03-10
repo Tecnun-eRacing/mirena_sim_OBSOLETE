@@ -7,6 +7,7 @@
 // ROS
 #include "rclcpp/rclcpp.hpp"
 #include "mirena_common/msg/car_controls.hpp"
+#include "mirena_common/msg/wheel_speeds.hpp"
 
 #include "ros_node3d.hpp"
 
@@ -19,10 +20,17 @@ namespace godot
 	private:
 		// ROS subscriber and callback
 		rclcpp::Subscription<mirena_common::msg::CarControls>::SharedPtr rosSub;
+
+		// WSS Weel speed sensor publisher
+		rclcpp::Publisher<mirena_common::msg::WheelSpeeds>::SharedPtr wheelSpeedPub;
+
 		// Internal Car Inputs
 		uint8_t gas;
 		uint8_t brake;
 		float steer_angle;
+
+		// Internal Car Outputs
+		float w_rl, w_rr, w_fl, w_fr; //Wheel speeds rad/s
 
 	protected:
 		static void _bind_methods();
@@ -38,8 +46,12 @@ namespace godot
 		uint8_t get_brake();
 		void set_steer_angle(float _steer_angle);
 		float get_steer_angle();
+
+		void set_wheels_speed(float rl, float rr,float fl, float fr);
+		
 		// Godot runtime
 		void _ros_ready() override;
+		void _ros_process(double delta)override;
 		// ROS
 		void topic_callback(const mirena_common::msg::CarControls::SharedPtr msg);
 	};

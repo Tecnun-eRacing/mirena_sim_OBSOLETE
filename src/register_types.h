@@ -11,6 +11,7 @@
 #include "mirena_cam.hpp"
 #include "mirena_lidar.hpp"
 #include "mirena_imu.hpp"
+#include "mirena_gps.hpp"
 
 using namespace godot;
 

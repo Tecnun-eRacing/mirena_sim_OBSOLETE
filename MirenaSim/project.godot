@@ -64,7 +64,8 @@ dump_keypoints={
 [physics]
 
 3d/run_on_separate_thread=true
-common/physics_ticks_per_second=400
-common/max_physics_steps_per_frame=100
-3d/solver/solver_iterations=4
+common/physics_ticks_per_second=200
+common/physics_jitter_fix=1.0
+3d/solver/solver_iterations=8
+3d/solver/contact_recycle_radius=0.05
 common/enable_object_picking=false
