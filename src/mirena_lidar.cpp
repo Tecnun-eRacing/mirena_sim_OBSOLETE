@@ -52,8 +52,6 @@ MirenaLidar::~MirenaLidar()
     // ROS 2 shutdown is typically handled at the application level
 }
 
-
-
 void MirenaLidar::set_max_range(double p_range) { max_range = p_range; }
 double MirenaLidar::get_max_range() const { return max_range; }
 
@@ -120,12 +118,18 @@ void MirenaLidar::scan()
     double v_angle_step = vertical_fov / vertical_resolution;
 
 // We paralelize the casts
-#pragma omp parallel for
+#pragma omp parallel 
+{
+
+    Ref<PhysicsRayQueryParameters3D> ray_query;
+    ray_query.instantiate();
+    ray_query->set_collision_mask(collision_mask);
+
+#pragma omp for
     for (int v = 0; v < vertical_resolution; ++v)
     {
         for (int h = 0; h < horizontal_resolution; ++h)
         {
-            //Decide Ray Direction
             float azimuth = (h_angle_step * h - horizontal_fov / 2.0) * Math_PI / 180.0;
             float elevation = (v_angle_step * v - vertical_fov / 2.0) * Math_PI / 180.0;
 
@@ -138,12 +142,11 @@ void MirenaLidar::scan()
             direction = global_transform.basis.xform(direction);
             Vector3 to = origin + direction * max_range;
 
-            PhysicsRayQueryParameters3D *ray_query = memnew(PhysicsRayQueryParameters3D);
             ray_query->set_from(origin);
             ray_query->set_to(to);
-            ray_query->set_collision_mask(collision_mask);
 
             Dictionary result = space_state->intersect_ray(ray_query);
+
             Vector3 hit_point; // For result
 
             if (result.size() > 0)
@@ -166,16 +169,17 @@ void MirenaLidar::scan()
             float x = static_cast<float>(point.x());
             float y = static_cast<float>(point.y());
             float z = static_cast<float>(point.z());
-        
+
             // Directly write to cloud->data using pointer manipulation
             memcpy(&cloud->data[index + 0], &x, sizeof(float));
             memcpy(&cloud->data[index + 4], &y, sizeof(float));
-            memcpy(&cloud->data[index + 8], &z, sizeof(float));           
+            memcpy(&cloud->data[index + 8], &z, sizeof(float));
         }
     }
+}
 
-    pub->publish(std::move(cloud));
-    // UtilityFunctions::print("3D LIDAR scan published:");
+pub->publish(std::move(cloud));
+// UtilityFunctions::print("3D LIDAR scan published:");
 }
 
 void MirenaLidar::_ros_process(double delta)

@@ -69,7 +69,8 @@ func follow_path(path: Path3D, car: Node3D, speed: float = 10) -> void:
 	path.add_child(path_follow)
 	path_follow.loop = true
 	self.freeze = true # Congelamos las fisicas
-	
+	self.linear_velocity = Vector3.ZERO
+	self.angular_velocity = Vector3.ZERO
 	while not is_equal_approx(path_follow.progress_ratio, 1.0):
 		path_follow.progress -= speed * get_process_delta_time()
 		path_follow.progress_ratio = clamp(path_follow.progress_ratio, 0.0, 1.0)
@@ -80,4 +81,4 @@ func follow_path(path: Path3D, car: Node3D, speed: float = 10) -> void:
 	self.freeze = false # DesCongelamos las fisicas
 	print("Finished Touring the Path")
 	path_follow.queue_free()
-	
+		
