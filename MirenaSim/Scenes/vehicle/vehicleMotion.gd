@@ -10,10 +10,19 @@ var drive_mode = ControlMode.ROS
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass
+	# Doing this ensures that all dumps are calculated righfully
+	RenderingServer.frame_post_draw.connect(_on_post_render)
 
+func _on_post_render():
+	if Input.is_action_just_pressed("dump_yolo"):
+		$MirenaCar/MirenaCam.dump_group_bbox_to_yolo("Cones")
+	
+	if Input.is_action_just_pressed("dump_keypoints"):
+		$MirenaCar/MirenaCam.dump_group_keypoints("Cones")
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	#Handle all inputs
+	
 	if Input.is_action_just_pressed("driving_mode"):
 		drive_mode = (drive_mode + 1) % 2  # Toggle between 3 modes
 		match drive_mode:
@@ -24,14 +33,11 @@ func _process(delta):
 			_:
 				pass
 
-	if Input.is_action_just_pressed("dump_yolo") or Input.is_joy_button_pressed(0, 0):
-		$MirenaCar/MirenaCam.dump_group_bbox_to_yolo("Cones")
-		
-	if Input.is_action_just_pressed("dump_keypoints") or Input.is_joy_button_pressed(0, 0):
-		$MirenaCar/MirenaCam.dump_group_keypoints("Cones")
-		follow_path(get_node("/root/SimEnviroment/Track").path,self)
 
 		
+	if Input.is_action_just_pressed("autofollow"):
+		follow_path(get_node("/root/SimEnviroment/Track").path,self)
+
 	match drive_mode:
 				ControlMode.ROS:
 					ros_drive()
@@ -41,8 +47,8 @@ func _process(delta):
 					pass
 					
 	$MirenaCar.set_wheels_speed($RL_WHEEL.get_rpm()*PI/30,$RR_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30)
-		
-		
+	
+	
 func ros_drive():
 	steering = $MirenaCar.steer_angle
 	engine_force = $MirenaCar.gas*ENGINE_F/255
@@ -50,18 +56,15 @@ func ros_drive():
 
 func manual_drive():
 	var steering_input = -Input.get_joy_axis(0, 2)
-	var accelerator_input = Input.get_joy_axis(0, 1)
-	var brake_input = 0
-	if Input.is_joy_button_pressed(0, 1):
-		brake_input = 1
-	else:
-		brake_input = 0
+	var accelerator_input = Input.get_action_strength("accel")
+	var brake_input = Input.get_action_strength("brake")
+
 	# Move Car
 	steering = MAX_STEER * steering_input
 	engine_force = ENGINE_F * accelerator_input;
 	brake = BRAKE_F * brake_input	
 
-func follow_path(path: Path3D, car: Node3D, speed: float = 10) -> void:
+func follow_path(path: Path3D, car: VehicleBody3D, speed: float = 10) -> void:
 	if not path or not car:
 		push_warning("Missing path or car reference!")
 		return
@@ -70,17 +73,34 @@ func follow_path(path: Path3D, car: Node3D, speed: float = 10) -> void:
 	var path_follow = PathFollow3D.new()
 	path.add_child(path_follow)
 	path_follow.loop = true
-	self.freeze = true # Congelamos las fisicas
-	self.linear_velocity = Vector3.ZERO
-	self.angular_velocity = Vector3.ZERO
+	
+	# Stop the vehicle and disable physics temporarily
+	car.linear_velocity = Vector3.ZERO
+	car.angular_velocity = Vector3.ZERO
+	car.engine_force = 0
+	car.brake = 1.0
+	car.freeze = true # Freeze physics
+	
+	# Reset progress
+	path_follow.progress = 0.0
+	
+	# Follow the path until completion
 	while not is_equal_approx(path_follow.progress_ratio, 1.0):
-		path_follow.progress -= speed * get_process_delta_time()
+		# Move forward along the path
+		path_follow.progress += speed * get_process_delta_time()
 		path_follow.progress_ratio = clamp(path_follow.progress_ratio, 0.0, 1.0)
 		
+		# Update vehicle position and orientation
 		car.global_position = path_follow.global_position
-		car.global_transform = path_follow.global_transform
+		
+		# Adjust orientation to follow the path's direction
+		var path_direction = path_follow.transform.basis.z
+		car.global_transform = car.global_transform.looking_at(
+			car.global_position + path_direction, Vector3.UP)
 		await get_tree().process_frame
-	self.freeze = false # DesCongelamos las fisicas
+	
+	# Re-enable physics once done
+	car.freeze = false
+	car.brake = 0.0
 	print("Finished Touring the Path")
 	path_follow.queue_free()
-		

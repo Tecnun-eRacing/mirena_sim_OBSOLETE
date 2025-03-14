@@ -33,7 +33,7 @@
 
 #include "ros_node3d.hpp"
 
-#define AREA_THRESHOLD 200
+#define AREA_THRESHOLD 400
 
 namespace godot
 {

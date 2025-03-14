@@ -305,7 +305,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
             continue;
         }
 
-        //Test if its inside it and big enough
+        // Test if its inside it and big enough
         Rect2 cone_area = getScreenSize(node_3d);
         Rect2 frame_area = Rect2(Vector2(0, 0), get_resolution()); // Frame rectangle
 
@@ -324,7 +324,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         // Get AABB origin
         Vector3 bottomCenter = mesh_aabb.get_position() + Vector3(mesh_aabb.get_size().x / 2.0, 0, mesh_aabb.get_size().z / 2.0); // Get mesh bottom center in global space
         // Generate Axis aligned keypoints
-        //Here is where actual order is decided
+        // Here is where actual order is decided
         std::vector<Vector3> points = {
             bottomCenter + Vector3(-0.075, 0.035, 0),
             bottomCenter + Vector3(0.075, 0.035, 0),
@@ -364,28 +364,27 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
             // Add the sphere as a child of the point node
             point_node->add_child(sphere);
         }
-        // Rotate the cone to face  camera at this instant
-        Vector3 camera_position = camera->get_global_position(); // Get camera position
 
-        // Calculate the direction vector to the camera, ignoring the Y-axis (yaw only)
-        Vector3 direction_to_camera = camera_position - keypoints->get_global_position();
-        direction_to_camera.y = 0; // Ignore the Y component to focus on yaw rotation
+        // Rotate the keypoints to face  camera at this instant
+        Transform3D camera_transform = camera->get_transform();
+        Vector3 camera_forward = camera_transform.basis.get_column(2).normalized(); // Access Z-axis using get_column(2)
 
-        // Normalize the direction vector (for accurate angle calculation)
-        direction_to_camera = direction_to_camera.normalized();
+        // Now set the Node3D's rotation to be parallel to the camera's view direction
+        Transform3D new_transform = keypoints->get_transform();
 
-        // Calculate the angle to rotate (in radians) around the Y-axis
-        float angle = atan2(direction_to_camera.x, direction_to_camera.z);
-
-        // Set the rotation around the Y-axis using degrees
-        keypoints->set_rotation_degrees(Vector3(0, angle * 180 / Math_PI, 0));
+        // Now set the keypoints3D's rotation to be parallel to the camera's view direction
+        Vector3 keypoints_position = new_transform.origin;
+        Vector3 target_position = keypoints_position + camera_forward;
+        new_transform.basis = Basis();                            // Reset the basis
+        new_transform.looking_at(target_position, Vector3(0, 1, 0)); // Align the keypoints with the camera's forward direction
+        // Apply the new transform to the keypoints
+        keypoints->set_transform(new_transform);
 
         // Setup the positions file
         String points_str;
         // Project each point to screen space
         int n = keypoints->get_child_count(); // Get number of points
-
-        for (int j = 0; j < n; i++)
+        for (int j = 0; j < n; j++)
         {
             Node3D *point = Object::cast_to<Node3D>(keypoints->get_child(j));                                                                             // get the 3d nodes
             Vector2 p_coords = camera->unproject_position(point->get_global_position());                                                                  // Unproject the points global position to camera
@@ -453,7 +452,7 @@ Rect2 MirenaCam::getScreenSize(Node3D *node_3d)
     AABB mesh_aabb = mesh_transform.xform(mesh->get_aabb());
 
     // Get the corners of the AABB
-    //Vector3 position = mesh_aabb.position; // Get position in global space
+    // Vector3 position = mesh_aabb.position; // Get position in global space
     Vector3 size = mesh_aabb.size;
     Vector3 corners[8] = {// Cube
                           mesh_aabb.position,
