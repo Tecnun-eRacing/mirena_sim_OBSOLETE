@@ -81,13 +81,22 @@ add_custom_command(
 #####################################################[  INSTALL ZONE ]#####################################################################
 # Install the simulator for usage with ros2
 
+# Detect architecture
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    # Install the godot engine as executable to lib
+    install(PROGRAMS bin/Godot_v4.4-stable_linux.x86_64
+        DESTINATION lib/${PROJECT_NAME}
+        RENAME godot
+    )
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+    # Install the godot engine as executable to lib
+    install(PROGRAMS bin/Godot_v4.4-stable_linux.arm64
+        DESTINATION lib/${PROJECT_NAME}
+        RENAME godot
+    )
+endif()
 
 
-# Install the godot engine as executable to lib
-install(PROGRAMS bin/Godot_v4.4-stable_linux.x86_64 
-DESTINATION lib/${PROJECT_NAME}
-RENAME godot
-)
 
 
 # Install project files to share directory
@@ -98,9 +107,9 @@ install(DIRECTORY
 
 # Install the launch script as executable
 install(PROGRAMS
-  scripts/launch_sim.sh  
-  DESTINATION lib/${PROJECT_NAME}/
-  RENAME MirenaSim
+    scripts/launch_sim.sh
+    DESTINATION lib/${PROJECT_NAME}/
+    RENAME MirenaSim
 )
 
 if(BUILD_TESTING)
