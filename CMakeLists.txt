@@ -78,30 +78,41 @@ add_custom_command(
     COMMENT "Copying the built shared library to godot LibMirena extension folder"
 )
 
+#####################################################[  INSTALL ZONE ]#####################################################################
+# Install the simulator for usage with ros2
 
-#Install the simulator for usage
-#Copy the godot project to share on the install folder
-install(DIRECTORY 
-MirenaSim
-DESTINATION share/${PROJECT_NAME}/
+
+
+# Install the godot engine as executable to lib
+install(PROGRAMS bin/Godot_v4.4-stable_linux.x86_64 
+DESTINATION lib/${PROJECT_NAME}
+RENAME godot
 )
 
-#Install the launchfiles
-install(DIRECTORY 
-launch
-DESTINATION share/${PROJECT_NAME}/
+
+# Install project files to share directory
+install(DIRECTORY
+    MirenaSim
+    DESTINATION share/${PROJECT_NAME}/
+)
+
+# Install the launch script as executable
+install(PROGRAMS
+  scripts/launch_sim.sh  
+  DESTINATION lib/${PROJECT_NAME}/
+  RENAME MirenaSim
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
+    find_package(ament_lint_auto REQUIRED)
+    # the following line skips the linter which checks for copyrights
+    # comment the line when a copyright and license is added to all source files
+    set(ament_cmake_copyright_FOUND TRUE)
+    # the following line skips cpplint (only works in a git repo)
+    # comment the line when this package is in a git repo and when
+    # a copyright and license is added to all source files
+    set(ament_cmake_cpplint_FOUND TRUE)
+    ament_lint_auto_find_test_dependencies()
 endif()
 
 ament_package()
