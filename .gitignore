@@ -45,7 +45,7 @@ rosidl_typesupport_fastrtps_cpp/
 #.import/
 
 # Imported translations (automatically generated from CSV files)
-*.translation
+#*.translation
 
 # Mono-specific ignores
 .mono/
