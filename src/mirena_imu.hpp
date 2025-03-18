@@ -14,6 +14,8 @@
 #include "geometry_msgs/msg/accel_stamped.hpp"
 #include "sensor_msgs/msg/imu.hpp"
 
+#define IMU_PUB_TOPIC "sensors/imu"
+
 namespace godot
 {
 

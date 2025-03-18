@@ -12,6 +12,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
+#define LIDAR_PUB_TOPIC "sensors/lidar"
+
 namespace godot
 {
     class MirenaLidar : public RosNode3D

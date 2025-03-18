@@ -49,7 +49,7 @@ float MirenaGPS::get_origin_altitude() const { return origin_altitude; }
 
 void MirenaGPS::_ros_ready()
 {
-    gps_publisher = ros_node->create_publisher<sensor_msgs::msg::NavSatFix>("gps", 10);
+    gps_publisher = ros_node->create_publisher<sensor_msgs::msg::NavSatFix>(GPS_PUB_TOPIC, 10);
 }
 void MirenaGPS::_ros_process(double delta)
 {

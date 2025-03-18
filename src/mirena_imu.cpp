@@ -20,7 +20,7 @@ void MirenaImu::_ros_ready()
 {
     // Create Publishers
     posePub = ros_node->create_publisher<geometry_msgs::msg::PoseStamped>("car_real_pose", 10);
-    imuPub = ros_node->create_publisher<sensor_msgs::msg::Imu>("car_imu", 10);
+    imuPub = ros_node->create_publisher<sensor_msgs::msg::Imu>(IMU_PUB_TOPIC, 10);
 }
 
 void MirenaImu::_ros_process(double delta)

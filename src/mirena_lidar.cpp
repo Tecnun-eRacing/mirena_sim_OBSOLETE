@@ -75,7 +75,7 @@ uint32_t MirenaLidar::get_collision_mask() const { return collision_mask; }
 
 void MirenaLidar::_ros_ready()
 {
-    pub = ros_node->create_publisher<sensor_msgs::msg::PointCloud2>("lidar_points", 10);
+    pub = ros_node->create_publisher<sensor_msgs::msg::PointCloud2>(LIDAR_PUB_TOPIC, 10);
 }
 
 void MirenaLidar::scan()

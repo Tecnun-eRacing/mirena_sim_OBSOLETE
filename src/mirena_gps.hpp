@@ -9,6 +9,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
+#define GPS_PUB_TOPIC "sensors/gps"
+
 namespace godot
 {
 

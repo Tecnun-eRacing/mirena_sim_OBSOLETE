@@ -39,8 +39,8 @@ void MirenaCar::_ros_ready()
 	brake = 0;
 	steer_angle = 0;
 	rosSub = ros_node->create_subscription<mirena_common::msg::CarControls>(
-		"car_control", 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
-	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>("wheel_speeds", 10);
+		CAR_CONTROL_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
+	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(WSS_PUB_TOPIC, 10);
 }
 
 // Getters and setters

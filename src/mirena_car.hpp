@@ -11,6 +11,9 @@
 
 #include "ros_node3d.hpp"
 
+#define WSS_PUB_TOPIC "sensors/wss"
+#define CAR_CONTROL_SUB_TOPIC "control/car_controls"
+
 namespace godot
 {
 
