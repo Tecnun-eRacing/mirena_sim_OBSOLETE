@@ -35,14 +35,14 @@ rosidl_typesupport_fastrtps_cpp/
 *.yaml.tmp
 
 # Godot specific ignores
-.godot/
-.import/
+#.godot/
+#.import/
 
 # Godot 4+ specific ignores
-.godot/
+#.godot/
 
 # Godot-specific ignores
-.import/
+#.import/
 
 # Imported translations (automatically generated from CSV files)
 *.translation
