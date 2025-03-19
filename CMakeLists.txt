@@ -88,7 +88,7 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
         DESTINATION lib/${PROJECT_NAME}
         RENAME godot
     )
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     # Install the godot engine as executable to lib
     install(PROGRAMS bin/Godot_v4.4-stable_linux.arm64
         DESTINATION lib/${PROJECT_NAME}

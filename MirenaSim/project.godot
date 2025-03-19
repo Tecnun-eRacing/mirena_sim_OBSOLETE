@@ -77,4 +77,5 @@ brake={
 [physics]
 
 3d/run_on_separate_thread=true
-common/max_physics_steps_per_frame=1
+common/physics_ticks_per_second=400
+common/physics_jitter_fix=0.0
