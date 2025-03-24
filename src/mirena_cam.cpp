@@ -100,7 +100,7 @@ void MirenaCam::_ros_ready()
     // Create publishers
     image_publisher = ros_node->create_publisher<sensor_msgs::msg::Image>(std::string(ros_node->get_name()) + "/image", 10);
     info_publisher = ros_node->create_publisher<sensor_msgs::msg::CameraInfo>(std::string(ros_node->get_name()) + "/camera_info", 10);
-
+    tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(*ros_node);
     // Create viewport
     viewport = memnew(SubViewport);
     viewport->set_size(resolution);
@@ -133,52 +133,73 @@ void MirenaCam::_ros_ready()
 void MirenaCam::_ros_process(double delta)
 {
 
+    // Create ROS2 messages
+    sensor_msgs::msg::Image frame;
+    geometry_msgs::msg::TransformStamped transformStamped;
+    sensor_msgs::msg::CameraInfo info;
+
     // Publish the viewport rendered image
     Ref<Image> img = viewport->get_texture()->get_image();
     if (img.is_null())
         return;
 
-    frame = std::make_unique<sensor_msgs::msg::Image>();
-    frame->header.stamp = ros_node->now();
-    frame->header.frame_id = ros_node->get_name();
-    frame->height = img->get_height();
-    frame->width = img->get_width();
-    frame->encoding = "rgb8";
-    frame->is_bigendian = false;
-    frame->step = img->get_width() * 3;
+    frame.header.stamp = ros_node->now();
+    frame.header.frame_id = ros_node->get_name();
+    frame.height = img->get_height();
+    frame.width = img->get_width();
+    frame.encoding = "rgb8";
+    frame.is_bigendian = false;
+    frame.step = img->get_width() * 3;
 
     // Copy image data
     PackedByteArray data = img->get_data();
-    frame->data.resize(data.size());
-    std::memcpy(frame->data.data(), data.ptrw(), data.size());
+    frame.data.resize(data.size());
+    std::memcpy(frame.data.data(), data.ptrw(), data.size());
 
-    // Publish
+    // Publish image
     image_publisher->publish(std::move(frame));
 
+    // Publish a minimal transform for correcting image position
+    std::string node_name(reinterpret_cast<const char *>(get_name().to_utf8_buffer().ptr()), get_name().to_utf8_buffer().size());
+
+    transformStamped.header.stamp = ros_node->now();
+    transformStamped.header.frame_id =  node_name;
+    transformStamped.child_frame_id = "camera_frame";
+
+    // Set rotation
+    tf2::Quaternion q;
+    q.setRPY(-3.1416/2, 0, 3.1416/2); 
+    transformStamped.transform.rotation.x = q.x();
+    transformStamped.transform.rotation.y = q.y();
+    transformStamped.transform.rotation.z = q.z();
+    transformStamped.transform.rotation.w = q.w();
+
+
+    tf_broadcaster->sendTransform(transformStamped);
+
     // Publish Camera Info
-    info = std::make_unique<sensor_msgs::msg::CameraInfo>();
     // Calculate focal length based on FOV
     double focal_length_pixels = (resolution.y / 2.0) / tan(fov * M_PI / 360.0); // divide by 2 for half-angle
     // Fill message
-    info->header.stamp = ros_node->now();
-    info->header.frame_id = "MirenaLidar";
-    info->height = resolution.y;
-    info->width = resolution.x;
-    info->distortion_model = "plumb_bob";
-    info->d = std::vector<double>(5, 0.0); // No distortion
-    info->k = {                            // Camera matrix
-               focal_length_pixels, 0.0, resolution.x / 2.0,
-               0.0, focal_length_pixels, resolution.y / 2.0,
-               0.0, 0.0, 1.0};
-    info->r = {// Rectification matrix
-               1.0, 0.0, 0.0,
-               0.0, 1.0, 0.0,
-               0.0, 0.0, 1.0};
+    info.header.stamp = ros_node->now();
+    info.header.frame_id = "camera_frame";
+    info.height = resolution.y;
+    info.width = resolution.x;
+    info.distortion_model = "plumb_bob";
+    info.d = std::vector<double>(5, 0.0); // No distortion
+    info.k = {                            // Camera matrix
+              focal_length_pixels, 0.0, resolution.x / 2.0,
+              0.0, focal_length_pixels, resolution.y / 2.0,
+              0.0, 0.0, 1.0};
+    info.r = {// Rectification matrix
+              1.0, 0.0, 0.0,
+              0.0, 1.0, 0.0,
+              0.0, 0.0, 1.0};
 
-    info->p = {// Projection matrix
-               focal_length_pixels, 0.0, resolution.x / 2.0, 0.0,
-               0.0, focal_length_pixels, resolution.y / 2.0, 0.0,
-               0.0, 0.0, 1.0, 0.0};
+    info.p = {// Projection matrix
+              focal_length_pixels, 0.0, resolution.x / 2.0, 0.0,
+              0.0, focal_length_pixels, resolution.y / 2.0, 0.0,
+              0.0, 0.0, 1.0, 0.0};
     info_publisher->publish(std::move(info));
 }
 
@@ -375,7 +396,7 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         // Now set the keypoints3D's rotation to be parallel to the camera's view direction
         Vector3 keypoints_position = new_transform.origin;
         Vector3 target_position = keypoints_position + camera_forward;
-        new_transform.basis = Basis();                            // Reset the basis
+        new_transform.basis = Basis();                               // Reset the basis
         new_transform.looking_at(target_position, Vector3(0, 1, 0)); // Align the keypoints with the camera's forward direction
         // Apply the new transform to the keypoints
         keypoints->set_transform(new_transform);

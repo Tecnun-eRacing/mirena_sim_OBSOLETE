@@ -30,6 +30,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "sensor_msgs/msg/camera_info.hpp"
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "ros_node3d.hpp"
 
@@ -44,8 +47,7 @@ namespace godot
 	private:
 		rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr image_publisher;	   // Image topic
 		rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr info_publisher; // Camera Info topic
-
-		// Internal Variables
+		std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;		// To set camera frame
 		Vector2i resolution;
 		bool use_environment;
 		SubViewport *viewport;
