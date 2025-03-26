@@ -9,4 +9,4 @@ PROJECT_DIR="../../share/mirena_sim/MirenaSim"
 cd "$DIR"
 
 # Run the Godot executable with the project path
-./godot --path "$PROJECT_DIR" "$@" # Replace with your actual executable if needed
+./godot --path "$PROJECT_DIR" "--" "$@" # Replace with your actual executable if needed

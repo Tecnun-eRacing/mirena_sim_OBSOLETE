@@ -1,8 +1,0 @@
-res://Scenes/sim/SimEnv.tscn
-res://Textures/Asphalt/Asphalt.tres
-res://Scenes/vehicle/racecar.tscn
-res://Scripts/track.gd
-res://Scenes/vehicle/vehicleMotion.gd
-res://Scenes/sim/sim_env.gd
-res://Scenes/cones/cone.tscn
-res://Scenes/cones/cone.gd

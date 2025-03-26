@@ -104,5 +104,7 @@ func follow_path(path: Path3D, speed: float = 10) -> void:
 func set_pose(pos : Vector3, theta : float) -> void:
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
+	await get_tree().process_frame #Let the phisics state propagate
 	#Update transform
+	set_deferred("global_transform", Transform3D(Basis(Vector3.UP, theta), pos))
 	set_deferred("global_transform", Transform3D(Basis(Vector3.UP, theta), pos))

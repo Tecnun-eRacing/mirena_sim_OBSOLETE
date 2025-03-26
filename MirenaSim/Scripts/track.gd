@@ -28,6 +28,7 @@ func showPath():
 ##Loads curve from a json file
 func loadTrack(filepath : String):
 	#Get json trackfile
+	print("Loading Track:" + filepath)
 	var file = FileAccess.open(filepath, FileAccess.READ)
 	var data = file.get_as_text()
 	var json = JSON.new()
@@ -43,7 +44,6 @@ func loadTrack(filepath : String):
 	showPath()
 	#Spawn the cones
 	genGates(path_curve,4,3)
-	print("Loaded track")
 
 
 ## Generates the cones along a path with given separation and spacing
