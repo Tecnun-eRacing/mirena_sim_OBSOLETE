@@ -19,6 +19,8 @@ func _on_post_render():
 	
 	if Input.is_action_just_pressed("dump_keypoints"):
 		$MirenaCar/MirenaCam.dump_group_keypoints("Cones")
+
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	#Handle all inputs
@@ -32,11 +34,8 @@ func _process(delta):
 				$UserCam.current = true
 			_:
 				pass
-
-
-		
 	if Input.is_action_just_pressed("autofollow"):
-		follow_path(get_node("/root/SimEnviroment/Track").path,self)
+		follow_path(get_node("/root/SimEnviroment/Track").path)
 
 	match drive_mode:
 				ControlMode.ROS:
@@ -63,44 +62,47 @@ func manual_drive():
 	steering = MAX_STEER * steering_input
 	engine_force = ENGINE_F * accelerator_input;
 	brake = BRAKE_F * brake_input	
-
-func follow_path(path: Path3D, car: VehicleBody3D, speed: float = 10) -> void:
-	if not path or not car:
-		push_warning("Missing path or car reference!")
+	
+	
+func follow_path(path: Path3D, speed: float = 10) -> void:
+	if not path :
+		push_warning("Missing path reference!")
 		return
-		
 	# Create local PathFollow3D node
 	var path_follow = PathFollow3D.new()
 	path.add_child(path_follow)
 	path_follow.loop = true
-	
 	# Stop the vehicle and disable physics temporarily
-	car.linear_velocity = Vector3.ZERO
-	car.angular_velocity = Vector3.ZERO
-	car.engine_force = 0
-	car.brake = 1.0
-	car.freeze = true # Freeze physics
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	engine_force = 0
+	brake = 1.0
+	freeze = true # Freeze physics
 	
 	# Reset progress
 	path_follow.progress = 0.0
-	
 	# Follow the path until completion
 	while not is_equal_approx(path_follow.progress_ratio, 1.0):
+		await get_tree().process_frame
 		# Move forward along the path
 		path_follow.progress += speed * get_process_delta_time()
 		path_follow.progress_ratio = clamp(path_follow.progress_ratio, 0.0, 1.0)
-		
 		# Update vehicle position and orientation
-		car.global_position = path_follow.global_position
-		
+		global_position = path_follow.global_position
 		# Adjust orientation to follow the path's direction
 		var path_direction = path_follow.transform.basis.z
-		car.global_transform = car.global_transform.looking_at(
-			car.global_position + path_direction, Vector3.UP)
-		await get_tree().process_frame
-	
+		global_transform = global_transform.looking_at(
+		global_position + path_direction, Vector3.UP)
 	# Re-enable physics once done
-	car.freeze = false
-	car.brake = 0.0
+	freeze = false
+	await get_tree().process_frame
+	brake = 0.0
 	print("Finished Touring the Path")
 	path_follow.queue_free()
+
+
+func set_pose(pos : Vector3, theta : float) -> void:
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	#Update transform
+	set_deferred("global_transform", Transform3D(Basis(Vector3.UP, theta), pos))

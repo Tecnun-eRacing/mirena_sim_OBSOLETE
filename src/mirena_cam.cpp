@@ -387,19 +387,17 @@ void MirenaCam::dump_group_keypoints(const StringName &group_name)
         }
 
         // Rotate the keypoints to face  camera at this instant
-        Transform3D camera_transform = camera->get_transform();
-        Vector3 camera_forward = camera_transform.basis.get_column(2).normalized(); // Access Z-axis using get_column(2)
+        //This means that the plane of the keypoints is decided by the vertical axis of the cone
+        //and the crossproduct of it with the normal vector of the camera
 
-        // Now set the Node3D's rotation to be parallel to the camera's view direction
-        Transform3D new_transform = keypoints->get_transform();
+        //Get cone vertical axis
+        Vector3 cone_v_axis = node_3d->get_global_transform().basis.get_column(1).normalized();
 
-        // Now set the keypoints3D's rotation to be parallel to the camera's view direction
-        Vector3 keypoints_position = new_transform.origin;
-        Vector3 target_position = keypoints_position + camera_forward;
-        new_transform.basis = Basis();                               // Reset the basis
-        new_transform.looking_at(target_position, Vector3(0, 1, 0)); // Align the keypoints with the camera's forward direction
+        //Use vertical axis and camera position to get the final transform
+        Transform3D keypoint_transform = keypoints->get_global_transform().looking_at(camera->get_global_transform().origin, cone_v_axis); // Align the keypoints with the camera's forward direction
+
         // Apply the new transform to the keypoints
-        keypoints->set_transform(new_transform);
+        keypoints->set_global_transform(keypoint_transform);
 
         // Setup the positions file
         String points_str;

@@ -23,7 +23,7 @@ func set_type(_type : color ):
 			color.YELLOW:
 				$Model.mesh = load("res://Models/Cone/Meshes/YCone.res")
 			color.ORANGE:
-				$Model.mesh = load("res://Models/Cone/Meshes/YCone.res")
+				$Model.mesh = load("res://Models/Cone/Meshes/OCone.res")
 	
 
 
