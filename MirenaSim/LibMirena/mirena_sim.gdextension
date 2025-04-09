@@ -8,3 +8,7 @@ reloadable = false
 linux.editor.x86_64 = "libmirena_sim.so"
 linux.debug.x86_64 = "libmirena_sim.so"
 linux.release.x86_64 = "libmirena_sim.so"
+
+linux.editor.arm64 = "libmirena_sim.so"
+linux.debug.arm64 = "libmirena_sim.so"
+linux.release.arm64 = "libmirena_sim.so"

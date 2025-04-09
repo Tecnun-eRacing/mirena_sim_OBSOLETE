@@ -6,13 +6,13 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "mirena_common/msg/car_controls.hpp"
+#include "mirena_common/msg/car_input.hpp"
 #include "mirena_common/msg/wheel_speeds.hpp"
 
 #include "ros_node3d.hpp"
 
 #define WSS_PUB_TOPIC "sensors/wss"
-#define CAR_CONTROL_SUB_TOPIC "control/car_controls"
+#define CAR_INPUT_SUB_TOPIC "control/car_input"
 
 namespace godot
 {
@@ -22,7 +22,7 @@ namespace godot
 		GDCLASS(MirenaCar, RosNode3D)
 	private:
 		// ROS subscriber and callback
-		rclcpp::Subscription<mirena_common::msg::CarControls>::SharedPtr rosSub;
+		rclcpp::Subscription<mirena_common::msg::CarInput>::SharedPtr rosSub;
 
 		// WSS Weel speed sensor publisher
 		rclcpp::Publisher<mirena_common::msg::WheelSpeeds>::SharedPtr wheelSpeedPub;
@@ -56,7 +56,7 @@ namespace godot
 		void _ros_ready() override;
 		void _ros_process(double delta)override;
 		// ROS
-		void topic_callback(const mirena_common::msg::CarControls::SharedPtr msg);
+		void topic_callback(const mirena_common::msg::CarInput::SharedPtr msg);
 	};
 
 }

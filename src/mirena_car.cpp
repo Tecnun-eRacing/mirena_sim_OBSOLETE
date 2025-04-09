@@ -38,8 +38,8 @@ void MirenaCar::_ros_ready()
 	gas = 0;
 	brake = 0;
 	steer_angle = 0;
-	rosSub = ros_node->create_subscription<mirena_common::msg::CarControls>(
-		CAR_CONTROL_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
+	rosSub = ros_node->create_subscription<mirena_common::msg::CarInput>(
+		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
 	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(WSS_PUB_TOPIC, 10);
 }
 
@@ -78,7 +78,7 @@ void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
 }
 
 //------------------------------------------------------------ ROS ---------------------------------------------------------//
-void MirenaCar::topic_callback(const mirena_common::msg::CarControls::SharedPtr msg)
+void MirenaCar::topic_callback(const mirena_common::msg::CarInput::SharedPtr msg)
 {
 	gas = msg->gas;
 	brake = msg->brake;
