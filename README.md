@@ -14,7 +14,7 @@ it implements the various required sensors to start off with ros2 tinkering,
 - [x] Keypoint and Bounding box dataset generation
 - [x] Automatic Dataset Generation
 - [x] Simulation time support
-- [ ] CLI Interface
+- [x] CLI Interface
 
 # Installation
 **This repo uses git LFS!** 
