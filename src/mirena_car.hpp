@@ -19,7 +19,7 @@ namespace godot
 
 	class MirenaCar : public RosNode3D
 	{
-		GDCLASS(MirenaCar, RosNode3D)
+		GDCLASS(MirenaCar, RosNode3D);
 	private:
 		// ROS subscriber and callback
 		rclcpp::Subscription<mirena_common::msg::CarInput>::SharedPtr rosSub;
@@ -28,8 +28,8 @@ namespace godot
 		rclcpp::Publisher<mirena_common::msg::WheelSpeeds>::SharedPtr wheelSpeedPub;
 
 		// Internal Car Inputs
-		uint8_t gas;
-		uint8_t brake;
+		float gas;
+		float brake;
 		float steer_angle;
 
 		// Internal Car Outputs
@@ -43,10 +43,10 @@ namespace godot
 		MirenaCar();
 		~MirenaCar();
 		// Getters and setters
-		void set_gas(uint8_t _gas);
-		uint8_t get_gas();
-		void set_brake(uint8_t _brake);
-		uint8_t get_brake();
+		void set_gas(float _gas);
+		float get_gas();
+		void set_brake(float _brake);
+		float get_brake();
 		void set_steer_angle(float _steer_angle);
 		float get_steer_angle();
 
