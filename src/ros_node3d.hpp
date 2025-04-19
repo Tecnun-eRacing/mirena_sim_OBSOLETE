@@ -7,6 +7,7 @@
 #include <godot_cpp/classes/engine.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_ros/transform_broadcaster.h>
+#include <optional>
 
 namespace godot
 {
@@ -20,6 +21,7 @@ namespace godot
         bool publish_tf = true;
         double publish_rate = 10; // 10 Hz
         double elapsed_time = 0.0;
+        std::optional<std::string> frame_name = std::nullopt;
 
         RosNode3D *find_nearest_ros_parent();
 
@@ -44,6 +46,9 @@ namespace godot
 
         void set_publish_rate(double rate);
         double get_publish_rate() const;
+
+        void set_frame_name(const String name);
+        String get_frame_name() const;
 
         void publish_transform();
     };

@@ -24,7 +24,7 @@ namespace godot
             rclcpp::NodeOptions options;
             options.parameter_overrides().push_back(rclcpp::Parameter("use_sim_time", true));
 
-            ros_node = std::make_shared<rclcpp::Node>(node_name.utf8().get_data(),options);
+            ros_node = std::make_shared<rclcpp::Node>(node_name.utf8().get_data(), options);
             tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(*ros_node);
             // Look for parent object
 
@@ -86,8 +86,8 @@ namespace godot
         RosNode3D *parent_ros_node = find_nearest_ros_parent();
         if (parent_ros_node) // if parent ros2 node get corresponding relative transform between them
         {
-            std::string parent_name(reinterpret_cast<const char *>(parent_ros_node->get_name().to_utf8_buffer().ptr()), parent_ros_node->get_name().to_utf8_buffer().size());
-            tf.header.frame_id = parent_name;
+            std::string parent_frame = parent_ros_node->get_frame_name().utf8().get_data();
+            tf.header.frame_id = parent_frame;
             // Get global transform
             g_tf = parent_ros_node->get_global_transform().affine_inverse() * g_tf; // Compute relative transform
         }
@@ -95,17 +95,16 @@ namespace godot
         {
             tf.header.frame_id = "world";
         }
-        //Esto hay que hacerlo asi XD putas strings
-        std::string child_name(reinterpret_cast<const char *>(get_name().to_utf8_buffer().ptr()), get_name().to_utf8_buffer().size());
-        tf.child_frame_id = child_name;
+        // Esto hay que hacerlo asi XD putas strings || Ozuba ese vocabulario ... :(
+        tf.child_frame_id = std::string(this->get_frame_name().utf8().get_data());
 
-        //Convert from godot to ros2 transform (Change in coordinate frame)
+        // Convert from godot to ros2 transform (Change in coordinate frame)
         Eigen::Isometry3d r_tf = godot_to_ros2(g_tf);
         // Set translation
         tf.transform.translation.x = r_tf.translation().x();
         tf.transform.translation.y = r_tf.translation().y();
         tf.transform.translation.z = r_tf.translation().z();
-    
+
         // Set rotation (as quaternion)
         Eigen::Quaterniond r_quat = godot_to_ros2(g_tf.basis.get_quaternion());
         tf.transform.rotation.w = r_quat.w();
@@ -124,9 +123,14 @@ namespace godot
 
         ClassDB::bind_method(D_METHOD("set_publish_rate", "rate"), &RosNode3D::set_publish_rate);
         ClassDB::bind_method(D_METHOD("get_publish_rate"), &RosNode3D::get_publish_rate);
+
+        ClassDB::bind_method(D_METHOD("set_frame_name", "name"), &RosNode3D::set_frame_name);
+        ClassDB::bind_method(D_METHOD("get_frame_name"), &RosNode3D::get_frame_name);
+       
         // Add properties
         ADD_PROPERTY(PropertyInfo(Variant::BOOL, "publish_transform"), "set_publish_transform", "get_publish_transform");
         ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
+        ADD_PROPERTY(PropertyInfo(Variant::STRING, "frame_name"), "set_frame_name", "get_frame_name");
     }
 
     void RosNode3D::set_publish_transform(bool enable)
@@ -147,6 +151,37 @@ namespace godot
     double RosNode3D::get_publish_rate() const
     {
         return publish_rate;
+    }
+
+    void RosNode3D::set_frame_name(const String name)
+    {
+        if (name.is_empty())
+        {
+            this->frame_name.reset();
+        }
+        else if (!name.is_valid_ascii_identifier())
+        {
+            return;
+        }
+        this->frame_name = name.utf8().get_data();
+    }
+
+    String RosNode3D::get_frame_name() const
+    {
+        std::string cpp_name;
+        if (this->frame_name.has_value())
+        {
+            // If there is a frame name override
+            cpp_name = this->frame_name.value();
+        }
+        else
+        {
+            // Default name
+            //cpp_name = std::string(reinterpret_cast<const char *>(get_name().to_utf8_buffer().ptr()), get_name().to_utf8_buffer().size());
+            cpp_name = String(this->get_name()).utf8().get_data();
+        }
+
+        return String(cpp_name.c_str());
     }
 
 }
