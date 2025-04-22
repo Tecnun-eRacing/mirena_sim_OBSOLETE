@@ -1,5 +1,30 @@
 #include "mirena_car.hpp"
 #include <godot_cpp/core/class_db.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
+namespace util {
+	inline geometry_msgs::msg::Vector3 to_ros_vec(godot::Vector3 gd_vec3){
+		geometry_msgs::msg::Vector3 msg;
+		msg.set__x(gd_vec3[2]);
+		msg.set__y(gd_vec3[0]);
+		msg.set__z(gd_vec3[1]);
+	}
+
+	inline geometry_msgs::msg::Pose to_ros_pose(godot::Vector3 gd_pos, godot::Vector3 gd_rot){
+		geometry_msgs::msg::Pose msg;
+		msg.position.set__x(gd_pos[0]);
+		msg.position.set__y(gd_pos[1]);
+		msg.position.set__z(gd_pos[2]);
+
+		tf2::Quaternion q; geometry_msgs::msg::Quaternion ros_q;
+		q.setRPY(gd_rot.[2], gd_rot[0], gd_rot[1]);
+		tf2::convert(q, ros_q);
+		msg.set__orientation(ros_q);
+
+		return msg
+	}
+}
 
 using namespace godot;
 
@@ -20,6 +45,9 @@ void MirenaCar::_bind_methods()
 
 	//Wheel Speeds
 	ClassDB::bind_method(D_METHOD("set_wheels_speed", "rl", "rr", "fl", "fr"), &MirenaCar::set_wheels_speed);
+
+	// Debug state broadcast:
+	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"), &MirenaCar::broadcast_car_state);
 }
 
 MirenaCar::MirenaCar()
@@ -39,8 +67,14 @@ void MirenaCar::_ros_ready()
 	brake = 0;
 	steer_angle = 0;
 	rosSub = ros_node->create_subscription<mirena_common::msg::CarInput>(
-		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
-	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(WSS_PUB_TOPIC, 10);
+		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1)
+	);
+	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(
+		WSS_PUB_TOPIC, 10
+	);
+	debugCarStatePub = ros_node->create_publisher<mirena_common::msg::Car>(
+		DEBUG_CAR_STATE_PUB_TOPIC, 10
+	);
 }
 
 // Getters and setters
@@ -75,6 +109,23 @@ void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
 	w_rr = rr;
 	w_fl = fl;
 	w_fr = fr;
+}
+
+void MirenaCar::broadcast_car_state(Vector3 position, Vector3 rotation, Vector3 lin_speed, Vector3 ang_speed, Vector3 lin_accel, Vector3 ang_accel){
+	mirena_common::msg::Car car_state;
+
+	// Populate Header
+	car_state.header.set__frame_id(FIXED_FRAME_NAME);
+	car_state.header.set__stamp(this->ros_node->now());
+
+	// Populate Mesage
+	car_state.set__pose(util::to_ros_pose(position, rotation));
+	car_state.velocity.set__linear(util::to_ros_vec(lin_speed));
+	car_state.velocity.set__angular(util::to_ros_vec(ang_speed));
+	car_state.acceleration.set__linear(util::to_ros_vec(lin_accel));
+	car_state.acceleration.set__angular(util::to_ros_vec(ang_accel));
+	
+	this->debugCarStatePub->publish(car_state);
 }
 
 //------------------------------------------------------------ ROS ---------------------------------------------------------//

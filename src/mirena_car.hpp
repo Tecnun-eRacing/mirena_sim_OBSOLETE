@@ -8,11 +8,15 @@
 #include "rclcpp/rclcpp.hpp"
 #include "mirena_common/msg/car_input.hpp"
 #include "mirena_common/msg/wheel_speeds.hpp"
+#include "mirena_common/msg/car.hpp"
 
 #include "ros_node3d.hpp"
 
 #define WSS_PUB_TOPIC "sensors/wss"
 #define CAR_INPUT_SUB_TOPIC "control/car_input"
+#define DEBUG_CAR_STATE_PUB_TOPIC "debug/sim/sim_car_state"
+
+#define FIXED_FRAME_NAME "world"
 
 namespace godot
 {
@@ -26,6 +30,9 @@ namespace godot
 
 		// WSS Weel speed sensor publisher
 		rclcpp::Publisher<mirena_common::msg::WheelSpeeds>::SharedPtr wheelSpeedPub;
+
+		// DEBUG
+		rclcpp::Publisher<mirena_common::msg::Car>:: SharedPtr debugCarStatePub;
 
 		// Internal Car Inputs
 		float gas;
@@ -51,6 +58,7 @@ namespace godot
 		float get_steer_angle();
 
 		void set_wheels_speed(float rl, float rr,float fl, float fr);
+		void broadcast_car_state(Vector3 position, Vector3 rotation, Vector3 lin_speed, Vector3 ang_speed, Vector3 lin_accel, Vector3 ang_accel)
 		
 		// Godot runtime
 		void _ros_ready() override;
