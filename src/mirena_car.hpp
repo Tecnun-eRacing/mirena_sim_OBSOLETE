@@ -58,7 +58,7 @@ namespace godot
 		float get_steer_angle();
 
 		void set_wheels_speed(float rl, float rr,float fl, float fr);
-		void broadcast_car_state(Vector3 position, Vector3 rotation, Vector3 lin_speed, Vector3 ang_speed, Vector3 lin_accel, Vector3 ang_accel)
+		void broadcast_car_state(const Dictionary& state);
 		
 		// Godot runtime
 		void _ros_ready() override;

@@ -1,28 +1,34 @@
 #include "mirena_car.hpp"
 #include <godot_cpp/core/class_db.hpp>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-namespace util {
-	inline geometry_msgs::msg::Vector3 to_ros_vec(godot::Vector3 gd_vec3){
+namespace util
+{
+	inline geometry_msgs::msg::Vector3 to_ros_vec(const godot::Vector3 &gd_vec3)
+	{
 		geometry_msgs::msg::Vector3 msg;
 		msg.set__x(gd_vec3[2]);
-		msg.set__y(gd_vec3[0]);
+		msg.set__y(-gd_vec3[0]);
 		msg.set__z(gd_vec3[1]);
+		return msg;
 	}
 
-	inline geometry_msgs::msg::Pose to_ros_pose(godot::Vector3 gd_pos, godot::Vector3 gd_rot){
+	inline geometry_msgs::msg::Pose to_ros_pose(const godot::Vector3 &gd_pos, const godot::Vector3 &gd_rot)
+	{
 		geometry_msgs::msg::Pose msg;
 		msg.position.set__x(gd_pos[0]);
 		msg.position.set__y(gd_pos[1]);
 		msg.position.set__z(gd_pos[2]);
 
-		tf2::Quaternion q; geometry_msgs::msg::Quaternion ros_q;
-		q.setRPY(gd_rot.[2], gd_rot[0], gd_rot[1]);
-		tf2::convert(q, ros_q);
-		msg.set__orientation(ros_q);
+		tf2::Quaternion q;
+		geometry_msgs::msg::Quaternion ros_q;
+		q.setRPY(gd_rot[2], gd_rot[0], gd_rot[1]);
+		msg.orientation.set__x(q.getX());
+		msg.orientation.set__y(q.getY());
+		msg.orientation.set__z(q.getZ());
+		msg.orientation.set__w(q.getW());
 
-		return msg
+		return msg;
 	}
 }
 
@@ -43,11 +49,11 @@ void MirenaCar::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_steer_angle", "_steer_angle"), &MirenaCar::set_steer_angle);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steer_angle"), "set_steer_angle", "get_steer_angle");
 
-	//Wheel Speeds
+	// Wheel Speeds
 	ClassDB::bind_method(D_METHOD("set_wheels_speed", "rl", "rr", "fl", "fr"), &MirenaCar::set_wheels_speed);
 
 	// Debug state broadcast:
-	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"), &MirenaCar::broadcast_car_state);
+	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "state_dict"), &MirenaCar::broadcast_car_state);
 }
 
 MirenaCar::MirenaCar()
@@ -67,14 +73,11 @@ void MirenaCar::_ros_ready()
 	brake = 0;
 	steer_angle = 0;
 	rosSub = ros_node->create_subscription<mirena_common::msg::CarInput>(
-		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1)
-	);
+		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
 	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(
-		WSS_PUB_TOPIC, 10
-	);
+		WSS_PUB_TOPIC, 10);
 	debugCarStatePub = ros_node->create_publisher<mirena_common::msg::Car>(
-		DEBUG_CAR_STATE_PUB_TOPIC, 10
-	);
+		DEBUG_CAR_STATE_PUB_TOPIC, 10);
 }
 
 // Getters and setters
@@ -111,20 +114,43 @@ void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
 	w_fr = fr;
 }
 
-void MirenaCar::broadcast_car_state(Vector3 position, Vector3 rotation, Vector3 lin_speed, Vector3 ang_speed, Vector3 lin_accel, Vector3 ang_accel){
+void MirenaCar::broadcast_car_state(
+	const Dictionary& state
+){
+    static const char* required_keys[] = {
+        "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"
+    };
+	
+	bool is_missing_key = false;
+    for (const char* key : required_keys) {
+        if (!state.has(key)) {
+            WARN_PRINT(String("Missing key in broadcast_car_state(): ") + key);
+			is_missing_key = true;
+		}
+    }
+
+	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG"));
+	if(is_missing_key) return;
+
+	Vector3 position = state["position"];
+	Vector3 rotation = state["rotation"];
+	Vector3 lin_speed = state["lin_speed"];
+	Vector3 ang_speed = state["ang_speed"];
+	Vector3 lin_accel = state["lin_accel"];
+	Vector3 ang_accel = state["ang_accel"];
 	mirena_common::msg::Car car_state;
 
 	// Populate Header
 	car_state.header.set__frame_id(FIXED_FRAME_NAME);
 	car_state.header.set__stamp(this->ros_node->now());
-
+	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG2"));
 	// Populate Mesage
 	car_state.set__pose(util::to_ros_pose(position, rotation));
 	car_state.velocity.set__linear(util::to_ros_vec(lin_speed));
 	car_state.velocity.set__angular(util::to_ros_vec(ang_speed));
 	car_state.acceleration.set__linear(util::to_ros_vec(lin_accel));
 	car_state.acceleration.set__angular(util::to_ros_vec(ang_accel));
-	
+	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG3"));
 	this->debugCarStatePub->publish(car_state);
 }
 
