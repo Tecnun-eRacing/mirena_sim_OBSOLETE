@@ -8,6 +8,17 @@ const MAX_STEER = 30*3.1415/180
 enum ControlMode {ROS, STEERING_WHEEL}
 var drive_mode = ControlMode.ROS
 
+#Physics
+var previous_linear_velocity: Vector3 = Vector3.ZERO
+var previous_angular_velocity: Vector3 = Vector3.ZERO
+
+var linear_acceleration: Vector3 = Vector3.ZERO
+var angular_acceleration: Vector3 = Vector3.ZERO
+
+# Broadcast
+var car_broadcast_accumulator: float = 0
+var car_broadcast_period: float = 0.1 # seconds
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	# Doing this ensures that all dumps are calculated righfully
@@ -24,7 +35,6 @@ func _on_post_render():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	#Handle all inputs
-	
 	if Input.is_action_just_pressed("driving_mode"):
 		drive_mode = (drive_mode + 1) % 2  # Toggle between 3 modes
 		match drive_mode:
@@ -46,8 +56,22 @@ func _process(delta):
 					pass
 					
 	$MirenaCar.set_wheels_speed($RL_WHEEL.get_rpm()*PI/30,$RR_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30,$FL_WHEEL.get_rpm()*PI/30)
+
+func _physics_process(delta: float) -> void:
+	# Calculate linear acceleration
+	linear_acceleration = (linear_velocity - previous_linear_velocity) / delta
+	previous_linear_velocity = linear_velocity
+
+	# Calculate angular acceleration
+	angular_acceleration = (angular_velocity - previous_angular_velocity) / delta
+	previous_angular_velocity = angular_velocity
 	
-	
+	# If enough time has passed, broadcast the message
+	self.car_broadcast_accumulator += delta
+	if self.car_broadcast_accumulator >= self.car_broadcast_period:
+		self.car_broadcast_accumulator = fmod(self.car_broadcast_accumulator, self.car_broadcast_period)
+		$MirenaCar.ros_broadcast_car_state(position, rotation, linear_velocity, angular_velocity, linear_acceleration, angular_acceleration)
+
 func ros_drive():
 	steering = $MirenaCar.steer_angle
 	engine_force = $MirenaCar.gas*ENGINE_F/255

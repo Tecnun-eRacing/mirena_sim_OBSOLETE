@@ -24,6 +24,7 @@ namespace godot
 	class MirenaCar : public RosNode3D
 	{
 		GDCLASS(MirenaCar, RosNode3D);
+
 	private:
 		// ROS subscriber and callback
 		rclcpp::Subscription<mirena_common::msg::CarInput>::SharedPtr rosSub;
@@ -32,7 +33,7 @@ namespace godot
 		rclcpp::Publisher<mirena_common::msg::WheelSpeeds>::SharedPtr wheelSpeedPub;
 
 		// DEBUG
-		rclcpp::Publisher<mirena_common::msg::Car>:: SharedPtr debugCarStatePub;
+		rclcpp::Publisher<mirena_common::msg::Car>::SharedPtr debugCarStatePub;
 
 		// Internal Car Inputs
 		float gas;
@@ -40,7 +41,7 @@ namespace godot
 		float steer_angle;
 
 		// Internal Car Outputs
-		float w_rl, w_rr, w_fl, w_fr; //Wheel speeds rad/s
+		float w_rl, w_rr, w_fl, w_fr; // Wheel speeds rad/s
 
 	protected:
 		static void _bind_methods();
@@ -57,12 +58,16 @@ namespace godot
 		void set_steer_angle(float _steer_angle);
 		float get_steer_angle();
 
-		void set_wheels_speed(float rl, float rr,float fl, float fr);
-		void broadcast_car_state(const Dictionary& state);
-		
+		void set_wheels_speed(float rl, float rr, float fl, float fr);
+		void broadcast_car_state(
+			const Vector3 &position, const Vector3 &rotation,
+			const Vector3 &lin_speed, const Vector3 &ang_speed,
+			const Vector3 &lin_accel, const Vector3 &ang_accel
+		);
+
 		// Godot runtime
 		void _ros_ready() override;
-		void _ros_process(double delta)override;
+		void _ros_process(double delta) override;
 		// ROS
 		void topic_callback(const mirena_common::msg::CarInput::SharedPtr msg);
 	};

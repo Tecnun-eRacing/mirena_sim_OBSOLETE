@@ -53,7 +53,7 @@ void MirenaCar::_bind_methods()
 	ClassDB::bind_method(D_METHOD("set_wheels_speed", "rl", "rr", "fl", "fr"), &MirenaCar::set_wheels_speed);
 
 	// Debug state broadcast:
-	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "state_dict"), &MirenaCar::broadcast_car_state);
+	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"), &MirenaCar::broadcast_car_state);
 }
 
 MirenaCar::MirenaCar()
@@ -115,42 +115,22 @@ void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
 }
 
 void MirenaCar::broadcast_car_state(
-	const Dictionary& state
+	const Vector3& position, const Vector3& rotation,
+	const Vector3& lin_speed, const Vector3& ang_speed,
+	const Vector3& lin_accel, const Vector3& ang_accel
 ){
-    static const char* required_keys[] = {
-        "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"
-    };
-	
-	bool is_missing_key = false;
-    for (const char* key : required_keys) {
-        if (!state.has(key)) {
-            WARN_PRINT(String("Missing key in broadcast_car_state(): ") + key);
-			is_missing_key = true;
-		}
-    }
-
-	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG"));
-	if(is_missing_key) return;
-
-	Vector3 position = state["position"];
-	Vector3 rotation = state["rotation"];
-	Vector3 lin_speed = state["lin_speed"];
-	Vector3 ang_speed = state["ang_speed"];
-	Vector3 lin_accel = state["lin_accel"];
-	Vector3 ang_accel = state["ang_accel"];
 	mirena_common::msg::Car car_state;
 
 	// Populate Header
 	car_state.header.set__frame_id(FIXED_FRAME_NAME);
 	car_state.header.set__stamp(this->ros_node->now());
-	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG2"));
+	
 	// Populate Mesage
 	car_state.set__pose(util::to_ros_pose(position, rotation));
 	car_state.velocity.set__linear(util::to_ros_vec(lin_speed));
 	car_state.velocity.set__angular(util::to_ros_vec(ang_speed));
 	car_state.acceleration.set__linear(util::to_ros_vec(lin_accel));
 	car_state.acceleration.set__angular(util::to_ros_vec(ang_accel));
-	WARN_PRINT(String("LMAO TS NOT WOKINNNGGGG3"));
 	this->debugCarStatePub->publish(car_state);
 }
 
