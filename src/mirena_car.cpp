@@ -8,7 +8,7 @@ namespace util
 	{
 		geometry_msgs::msg::Vector3 msg;
 		msg.set__x(gd_vec3[2]);
-		msg.set__y(-gd_vec3[0]);
+		msg.set__y(gd_vec3[0]);
 		msg.set__z(gd_vec3[1]);
 		return msg;
 	}
@@ -16,9 +16,9 @@ namespace util
 	inline geometry_msgs::msg::Pose to_ros_pose(const godot::Vector3 &gd_pos, const godot::Vector3 &gd_rot)
 	{
 		geometry_msgs::msg::Pose msg;
-		msg.position.set__x(gd_pos[0]);
-		msg.position.set__y(gd_pos[1]);
-		msg.position.set__z(gd_pos[2]);
+		msg.position.set__x(gd_pos[2]);
+		msg.position.set__y(gd_pos[0]);
+		msg.position.set__z(gd_pos[1]);
 
 		tf2::Quaternion q;
 		geometry_msgs::msg::Quaternion ros_q;
