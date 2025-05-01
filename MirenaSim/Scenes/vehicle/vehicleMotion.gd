@@ -21,7 +21,7 @@ var car_broadcast_period: float = 0.1 # seconds
 
 # Position Wrap
 var do_pos_wraping: bool = true;
-var x_limits: Vector2 = Vector2i(-20, 20)
+var x_limits: Vector2 = Vector2i(-45, 45)
 var z_limits: Vector2 = Vector2i(-45, 45)
 
 # Called when the node enters the scene tree for the first time.
@@ -65,7 +65,7 @@ func _process(delta):
 		
 	########### CAR POSITION WRAPPING #############
 	if (do_pos_wraping and is_outside_boundaries()):
-		print("IS outside", self.position)
+		#print("IS outside", self.position)
 		var new_pos = self.position
 		var x_range = x_limits.y - x_limits.x
 		var z_range = z_limits.y - z_limits.x

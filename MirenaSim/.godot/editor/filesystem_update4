@@ -1,5 +1,4 @@
-res://Scenes/vehicle/racecar.tscn
-res://Textures/Asphalt/Asphalt.tres
-res://Scenes/vehicle/car_options_menu.gd
 res://Scenes/sim/SimEnv.tscn
+res://Textures/Asphalt/Asphalt.tres
+res://Scenes/vehicle/racecar.tscn
 res://Scenes/vehicle/vehicleMotion.gd
