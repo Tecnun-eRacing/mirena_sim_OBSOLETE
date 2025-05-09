@@ -5,8 +5,8 @@ var arguments = {}
 func _ready() -> void:
 	#Process user messages
 	for argument in OS.get_cmdline_user_args():
-		if argument.contains("="):
-			var key_value = argument.split("=")
+		if argument.contains(" "):
+			var key_value = argument.split(" s")
 			arguments[key_value[0].trim_prefix("--")] = key_value[1]
 		else:
 			# Options without an argument will be present in the dictionary,
