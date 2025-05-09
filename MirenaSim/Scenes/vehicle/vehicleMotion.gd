@@ -21,8 +21,8 @@ var car_broadcast_period: float = 0.1 # seconds
 
 # Position Wrap
 var do_pos_wraping: bool = true;
-var x_limits: Vector2 = Vector2i(-45, 45)
-var z_limits: Vector2 = Vector2i(-45, 45)
+var x_limits: Vector2 = Vector2i(-50, 50)
+var z_limits: Vector2 = Vector2i(-50, 50)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
