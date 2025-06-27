@@ -1,7 +1,8 @@
 # mirena_sim
 MirenaSim is a godot simulation enviroment for formula student driverless system development, 
 it implements the various required sensors to start off with ros2 tinkering,
-![imagen](https://github.com/user-attachments/assets/e692b5ae-90e4-4802-aaf6-4e614e042778)
+
+![SimBanner](https://github.com/user-attachments/assets/8311561e-1324-448f-80ac-e42c1cdfb438)
 
 
 ## Current Features
