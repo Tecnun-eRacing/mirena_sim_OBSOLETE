@@ -114,3 +114,5 @@ COLCON_IGNORE
 AMENT_IGNORE
 MirenaSim/LibMirena/libmirena_sim.so
 MirenaSim/LibMirena/libmirena_sim.so
+
+.godot
