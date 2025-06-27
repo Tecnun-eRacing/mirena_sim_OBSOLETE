@@ -34,46 +34,46 @@ namespace util
 
 using namespace godot;
 
-void MirenaCar::_bind_methods()
+void MirenaCarBase::_bind_methods()
 {
 	// GAS
-	ClassDB::bind_method(D_METHOD("get_gas"), &MirenaCar::get_gas);
-	ClassDB::bind_method(D_METHOD("set_gas", "_gas"), &MirenaCar::set_gas);
+	ClassDB::bind_method(D_METHOD("get_gas"), &MirenaCarBase::get_gas);
+	ClassDB::bind_method(D_METHOD("set_gas", "_gas"), &MirenaCarBase::set_gas);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gas"), "set_gas", "get_gas");
 	// BRAKE
-	ClassDB::bind_method(D_METHOD("get_brake"), &MirenaCar::get_brake);
-	ClassDB::bind_method(D_METHOD("set_brake", "_brake"), &MirenaCar::set_brake);
+	ClassDB::bind_method(D_METHOD("get_brake"), &MirenaCarBase::get_brake);
+	ClassDB::bind_method(D_METHOD("set_brake", "_brake"), &MirenaCarBase::set_brake);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "brake"), "set_brake", "get_brake");
 	// STEER_ANGLE
-	ClassDB::bind_method(D_METHOD("get_steer_angle"), &MirenaCar::get_steer_angle);
-	ClassDB::bind_method(D_METHOD("set_steer_angle", "_steer_angle"), &MirenaCar::set_steer_angle);
+	ClassDB::bind_method(D_METHOD("get_steer_angle"), &MirenaCarBase::get_steer_angle);
+	ClassDB::bind_method(D_METHOD("set_steer_angle", "_steer_angle"), &MirenaCarBase::set_steer_angle);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "steer_angle"), "set_steer_angle", "get_steer_angle");
 
 	// Wheel Speeds
-	ClassDB::bind_method(D_METHOD("set_wheels_speed", "rl", "rr", "fl", "fr"), &MirenaCar::set_wheels_speed);
+	ClassDB::bind_method(D_METHOD("set_wheels_speed", "rl", "rr", "fl", "fr"), &MirenaCarBase::set_wheels_speed);
 
 	// Debug state broadcast:
-	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"), &MirenaCar::broadcast_car_state);
+	ClassDB::bind_method(D_METHOD("ros_broadcast_car_state", "position", "rotation", "lin_speed", "ang_speed", "lin_accel", "ang_accel"), &MirenaCarBase::broadcast_car_state);
 }
 
-MirenaCar::MirenaCar()
+MirenaCarBase::MirenaCarBase()
 {
 }
 
-MirenaCar::~MirenaCar()
+MirenaCarBase::~MirenaCarBase()
 {
 }
 
 //------------------------------------------------------------ GODOT ---------------------------------------------------------//
 
-void MirenaCar::_ros_ready()
+void MirenaCarBase::_ros_ready()
 {
 	// Zero internal variables
 	gas = 0;
 	brake = 0;
 	steer_angle = 0;
 	rosSub = ros_node->create_subscription<mirena_common::msg::CarInput>(
-		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCar::topic_callback, this, std::placeholders::_1));
+		CAR_INPUT_SUB_TOPIC, 10, std::bind(&MirenaCarBase::topic_callback, this, std::placeholders::_1));
 	wheelSpeedPub = ros_node->create_publisher<mirena_common::msg::WheelSpeeds>(
 		WSS_PUB_TOPIC, 10);
 	debugCarStatePub = ros_node->create_publisher<mirena_common::msg::Car>(
@@ -81,32 +81,32 @@ void MirenaCar::_ros_ready()
 }
 
 // Getters and setters
-void MirenaCar::set_gas(float _gas)
+void MirenaCarBase::set_gas(float _gas)
 {
 	gas = _gas;
 }
-float MirenaCar::get_gas()
+float MirenaCarBase::get_gas()
 {
 	return gas;
 }
-void MirenaCar::set_brake(float _brake)
+void MirenaCarBase::set_brake(float _brake)
 {
 	brake = _brake;
 }
-float MirenaCar::get_brake()
+float MirenaCarBase::get_brake()
 {
 	return brake;
 }
-void MirenaCar::set_steer_angle(float _steer_angle)
+void MirenaCarBase::set_steer_angle(float _steer_angle)
 {
 	steer_angle = _steer_angle;
 }
-float MirenaCar::get_steer_angle()
+float MirenaCarBase::get_steer_angle()
 {
 	return steer_angle;
 }
 
-void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
+void MirenaCarBase::set_wheels_speed(float rl, float rr, float fl, float fr)
 {
 	w_rl = rl;
 	w_rr = rr;
@@ -114,7 +114,7 @@ void MirenaCar::set_wheels_speed(float rl, float rr, float fl, float fr)
 	w_fr = fr;
 }
 
-void MirenaCar::broadcast_car_state(
+void MirenaCarBase::broadcast_car_state(
 	const Vector3& position, const Vector3& rotation,
 	const Vector3& lin_speed, const Vector3& ang_speed,
 	const Vector3& lin_accel, const Vector3& ang_accel
@@ -135,14 +135,14 @@ void MirenaCar::broadcast_car_state(
 }
 
 //------------------------------------------------------------ ROS ---------------------------------------------------------//
-void MirenaCar::topic_callback(const mirena_common::msg::CarInput::SharedPtr msg)
+void MirenaCarBase::topic_callback(const mirena_common::msg::CarInput::SharedPtr msg)
 {
 	gas = msg->gas;
 	brake = msg->brake;
 	steer_angle = msg->steer_angle;
 }
 
-void MirenaCar::_ros_process(double delta)
+void MirenaCarBase::_ros_process(double delta)
 {
 	auto ws = mirena_common::msg::WheelSpeeds();
 	ws.header.stamp = ros_node->now();

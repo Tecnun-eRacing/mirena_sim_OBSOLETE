@@ -21,9 +21,9 @@
 namespace godot
 {
 
-	class MirenaCar : public RosNode3D
+	class MirenaCarBase : public RosNode3D
 	{
-		GDCLASS(MirenaCar, RosNode3D);
+		GDCLASS(MirenaCarBase, RosNode3D);
 
 	private:
 		// ROS subscriber and callback
@@ -48,8 +48,8 @@ namespace godot
 
 	public:
 		// Constructors
-		MirenaCar();
-		~MirenaCar();
+		MirenaCarBase();
+		~MirenaCarBase();
 		// Getters and setters
 		void set_gas(float _gas);
 		float get_gas();

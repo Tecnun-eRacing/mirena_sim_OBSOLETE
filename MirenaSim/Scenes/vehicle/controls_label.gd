@@ -2,7 +2,7 @@ extends Label
 
 func _ready() -> void:
 	# Display Controls
-	self.text = "<%s> -> Open menu" % get_first_key_for_action("open_car_menu")
+	self.text = "Press < %s > to open menu" % get_first_key_for_action("open_car_menu")
 	
 func get_first_key_for_action(action: String) -> String:
 	var events = InputMap.action_get_events(action)

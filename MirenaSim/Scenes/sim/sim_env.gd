@@ -1,8 +1,15 @@
 extends Node
+class_name SimEnviroment
 
-var arguments = {}
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
+	self._parse_arguments()
+
+func get_track_manager() -> TrackManager:
+	return $TrackManager
+
+func _parse_arguments() -> void:
+	var arguments = {}
 	#Process user messages
 	for argument in OS.get_cmdline_user_args():
 		if argument.contains("="):
@@ -17,9 +24,3 @@ func _ready() -> void:
 		$Track.loadTrack(arguments["track"])
 	if arguments.has("follow"):
 		$vehicle.follow_path($Track.path)
-	
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-	

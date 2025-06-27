@@ -20,7 +20,7 @@ void mirenasim_init(ModuleInitializationLevel p_level)
 
 	GDREGISTER_CLASS(RosTime);
 	GDREGISTER_CLASS(RosNode3D);
-	GDREGISTER_CLASS(MirenaCar);
+	GDREGISTER_CLASS(MirenaCarBase);
 	GDREGISTER_CLASS(MirenaCam);
 	GDREGISTER_CLASS(MirenaLidar);
 	GDREGISTER_CLASS(MirenaImu);
