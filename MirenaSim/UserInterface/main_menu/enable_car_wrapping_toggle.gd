@@ -1,8 +1,12 @@
 extends CheckButton
 
 func _ready() -> void:
-	self.toggled.connect(SIM.get_vehicle().set_do_position_wrapping)
-	self.toggled.connect(func(_x): self.update_state())
+	self.toggled.connect(self.on_toggle)
+
+func on_toggle(value): 
+	SIM.get_vehicle().set_do_position_wrapping(value)
+	self.update_state()
+	
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED:

@@ -13,5 +13,5 @@ func _on_click() -> void:
 		self._miku_node.position = Vector3(0, -0.3, 0.525)
 	else:
 		SIM.get_vehicle().remove_child(self._miku_node)
-		self._miku_node.free()
+		self._miku_node.queue_free()
 		self._miku_node = null

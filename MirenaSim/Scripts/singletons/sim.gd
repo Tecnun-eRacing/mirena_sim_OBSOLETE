@@ -61,3 +61,7 @@ func get_stats() -> Dictionary:
 
 func get_env() -> SimEnviroment:
 	return self._current_scene
+
+## Shortcut for SIM.get_env().get_track_manager()
+func get_track_manager() -> TrackManager:
+	return self._current_scene.get_track_manager()
