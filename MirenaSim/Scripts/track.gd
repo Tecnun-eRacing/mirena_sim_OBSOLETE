@@ -11,7 +11,6 @@ func clearTrack():
 	for cone in get_tree().get_nodes_in_group("Cones"):
 		cone.queue_free() # Delete each element
 
-
 func showPath():
 	#Visualize path
 	var line_mesh := ImmediateMesh.new()
@@ -25,8 +24,7 @@ func showPath():
 	for i in range(path_curve.get_point_count()):
 		line_mesh.surface_add_vertex(path_curve.get_point_position(i))
 	line_mesh.surface_end()
-	
-	
+
 ##Loads curve from a json file
 func loadTrack(filepath : String):
 	#Get json trackfile

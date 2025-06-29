@@ -1,12 +1,32 @@
-[gd_scene load_steps=5 format=3 uid="uid://ne6yuaaeiar8"]
+[gd_scene load_steps=6 format=3 uid="uid://ne6yuaaeiar8"]
 
 [ext_resource type="Script" uid="uid://dl0k82cq0p7ky" path="res://UserInterface/hud/mirena_hud.gd" id="1_lfjlq"]
 [ext_resource type="Script" uid="uid://ba6w2edq6k5dp" path="res://Scenes/vehicle/controls_label.gd" id="2_hox2s"]
 [ext_resource type="PackedScene" uid="uid://d11pn6ulabdj" path="res://UserInterface/main_menu/main_menu.tscn" id="3_gcfw8"]
 [ext_resource type="Script" uid="uid://dxea5vnadwqmk" path="res://UserInterface/hud/track_loading_window.gd" id="4_5aqoi"]
+[ext_resource type="PackedScene" uid="uid://70spcmcc35b2" path="res://UserInterface/mirena_logger/mirena_logger.tscn" id="4_vis67"]
 
 [node name="DebugLayer" type="CanvasLayer"]
 script = ExtResource("1_lfjlq")
+
+[node name="MirenaLoggerNode" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="MirenaLogger" parent="MirenaLoggerNode" instance=ExtResource("4_vis67")]
+layout_mode = 1
+offset_top = -320.0
+offset_bottom = 0.0
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 offset_left = 10.0
@@ -72,3 +92,7 @@ ok_button_text = "Open"
 file_mode = 0
 access = 2
 script = ExtResource("4_5aqoi")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0

@@ -8,11 +8,11 @@ func set_type(_type : color ):
 		type = _type
 		match type:
 			color.BLUE:
-				$Model.mesh = load("res://Models/Cone/Meshes/BCone.res")
+				$Model.mesh = load("res://Assets/Models/Cone/Meshes/BCone.res")
 			color.YELLOW:
-				$Model.mesh = load("res://Models/Cone/Meshes/YCone.res")
+				$Model.mesh = load("res://Assets/Models/Cone/Meshes/YCone.res")
 			color.ORANGE:
-				$Model.mesh = load("res://Models/Cone/Meshes/OCone.res")
+				$Model.mesh = load("res://Assets/Models/Cone/Meshes/OCone.res")
 
 func _on_body_entered(body: Node) -> void:
 	if body.name == "vehicle" and not moved:
