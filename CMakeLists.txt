@@ -24,6 +24,16 @@ find_package(OpenMP REQUIRED) # For lidar optimizations
 set(GODOTCPP_DISABLE_EXCEPTIONS OFF)
 add_subdirectory(godot-cpp)
 
+# Suppress build warnings for the godot files
+add_library(godot_cpp_no_cmake_warnings INTERFACE)
+target_link_libraries(godot_cpp_no_cmake_warnings INTERFACE godot::cpp)
+if(MSVC)
+    target_compile_options(godot_cpp_no_cmake_warnings INTERFACE /w)
+else()
+    target_compile_options(godot_cpp_no_cmake_warnings INTERFACE -w)
+endif()
+
+
 # Add paths for ROS 2 headers
 include_directories(${rclcpp_INCLUDE_DIRS})
 include_directories(${tf2_INCLUDE_DIRS})
@@ -66,8 +76,8 @@ target_link_libraries(mirena_ros
     ${std_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
     ${geometry_msgs_LIBRARIES}
-    godot::cpp
     OpenMP::OpenMP_CXX
+    godot_cpp_no_cmake_warnings
 )
 
 
