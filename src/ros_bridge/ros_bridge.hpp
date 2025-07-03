@@ -1,12 +1,10 @@
-
-#ifndef MIRENA_ROS_PUBSUB_HPP
-#define MIRENA_ROS_PUBSUB_HPP
+#pragma once
 
 #include <godot_cpp/classes/ref_counted.hpp>
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "visualization_msgs/msg/marker.hpp"
+#include "mirena_common/msg/"
 
 #define DEBUG_FULL_TRACK_TOPIC "debug/sim/full_track_path"
 #define DEBUG_IMMEDIATE_TRACK_TOPIC "debug/sim/immediate_track_path"
@@ -16,9 +14,9 @@
 namespace godot
 {
 	// Refcounted object used as a binding for publishing and subscribing to topics, as well as hosting and requesting services
-	class MirenaRosPubSub: public RefCounted 
+	class MirenaRosBridge: public RefCounted 
 	{
-		GDCLASS(MirenaRosPubSub, RefCounted);
+		GDCLASS(MirenaRosBridge, RefCounted);
 
 	private:
 		rclcpp::Publisher<visualization_msgs::msg::Marker:SharedPtr> debugFullTrackPub; // Line strip
@@ -29,8 +27,8 @@ namespace godot
 
 	public:
 		// Constructors
-		MirenaRosPubSub();
-		~MirenaRosPubSub();
+		MirenaRosBridge();
+		~MirenaRosBridge();
 		// Getters and setters
 
 
@@ -43,5 +41,3 @@ namespace godot
 	};
 
 }
-
-#endif
