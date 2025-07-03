@@ -46,13 +46,13 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 # Source files for the project (your GDExtension and ROS 2 code)
 include_directories(src)
 set(SOURCES
-    src/ros_time.cpp
-    src/ros_node3d.cpp
-    src/mirena_car.cpp
-    src/mirena_cam.cpp
-    src/mirena_lidar.cpp
-    src/mirena_imu.cpp
-    src/mirena_gps.cpp
+    src/node/ros_time.cpp
+    src/node/ros_node3d.cpp
+    src/node/mirena_car.cpp
+    src/node/mirena_cam.cpp
+    src/node/mirena_lidar.cpp
+    src/node/mirena_imu.cpp
+    src/node/mirena_gps.cpp
     src/register_types.cpp
 )
 

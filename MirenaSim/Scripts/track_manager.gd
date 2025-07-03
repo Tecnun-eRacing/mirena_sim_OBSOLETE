@@ -167,7 +167,6 @@ func show_path():
 		self._car_path_mesh.show()
 	else:
 		self._generate_car_path_mesh()
-	
 
 func hide_path():
 	if self._car_path_mesh != null:
