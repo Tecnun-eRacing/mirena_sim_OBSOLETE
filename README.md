@@ -1,3 +1,4 @@
+# THIS REPOSITORY IS OBSOLETE; CHECK [THE NEW ONE](https://github.com/Tecnun-eRacing/mirena_sim)
 # mirena_sim
 MirenaSim is a godot simulation enviroment for formula student driverless system development, 
 it implements the various required sensors to start off with ros2 tinkering,
